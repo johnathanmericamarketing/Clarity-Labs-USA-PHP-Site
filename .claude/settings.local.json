@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where php:*)",
+      "Bash(where mysqld:*)",
+      "Bash(where.exe php:*)",
+      "Bash(where.exe mysqld:*)",
+      "Bash(cmd.exe //c \"where php\")",
+      "Bash(cmd.exe //c \"where mysqld\")",
+      "Read(//c/php/php-8.3.30-Win32-vs16-x64/**)",
+      "Read(//c//**)",
+      "Bash(cmd.exe //c \"dir C:\\\\php\\\\php-8.3.30-Win32-vs16-x64\\\\php.exe\")",
+      "Bash(cmd.exe //c \"dir /s /b C:\\\\php\\\\php.exe\")",
+      "Bash(cmd.exe //c \"dir /s /b C:\\\\mysql*\\\\mysqld.exe\")",
+      "Bash(cmd.exe //c \"dir /s /b \"\"C:\\\\Program Files\\\\MySQL\\\\*mysqld.exe\"\"\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pip install:*)",
+      "Bash(python -c \":*)",
+      "Bash(for folder:*)",
+      "Bash(do)",
+      "Bash(mkdir -p \"$folder/images\" \"$folder/pdf\")",
+      "Bash(echo \"Created: $folder/images & $folder/pdf\")",
+      "Bash(done)",
+      "Bash(php -r \"list\\($w,$h\\) = getimagesize\\(''H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/images/products/bpc-157/images/bpc-157_10mg_mockup_nobackground.png''\\); echo $w.''x''.$h;\")",
+      "Bash(\"/c/xampp/php/php.exe\" -r \"list\\($w,$h\\) = getimagesize\\(''H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/images/products/bpc-157/images/bpc-157_10mg_mockup_nobackground.png''\\); echo $w.''x''.$h;\")",
+      "mcp__Windows-MCP__PowerShell"
+    ]
+  }
+}

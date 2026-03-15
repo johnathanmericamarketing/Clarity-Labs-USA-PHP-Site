@@ -1,0 +1,209 @@
+============================================================
+  CLARITY LABS USA — SESSION CHANGELOG
+  Date: March 8, 2026
+============================================================
+
+PROJECT: Clarity Labs USA PHP Site
+PATH:    H:\OneDrive\OneDrive - Evo Tech\Websites\Clarity Labs USA\Clarity Labs USA PHP Site\
+
+
+============================================================
+  FILES MODIFIED
+============================================================
+
+1. index.php
+2. css/styles.css
+3. about.php
+4. images/video/video-thumb.webp (new file added)
+
+
+============================================================
+  CHANGE LOG (in order)
+============================================================
+
+--------------------------------------------------------------
+1. VIDEO SECTION — THUMBNAIL IMAGE FIX
+--------------------------------------------------------------
+File: index.php (line ~168)
+
+WHAT: Replaced broken Cloudflare Stream thumbnail URL with a local image.
+
+BEFORE:
+  <img src="https://customer-rm7csfkunwywpekp.cloudflarestream.com/74f7b1c9b593567cc1ff8fce578540d8/thumbnails/thumbnail.jpg?time=1h12m47s&height=600" ...>
+
+AFTER:
+  <img src="images/video/video-thumb.webp" ...>
+
+NOTE: The video itself still loads from Cloudflare Stream on click.
+      New file added: images/video/video-thumb.webp (1280x720 recommended, 16:9)
+
+
+--------------------------------------------------------------
+2. VIDEO SECTION — PLAY BUTTON REDESIGN + ANIMATION
+--------------------------------------------------------------
+Files: index.php, css/styles.css
+
+WHAT: Redesigned the play button icon and added animated pulse effect.
+
+DESIGN:
+  - White filled circle
+  - Green (#2A9D8F) play triangle in the middle
+  - Green (#2A9D8F) outline around the circle
+  - Added <span class="video-play-pulse"></span> element behind the button
+
+ANIMATIONS:
+  - "playBounce" — gentle scale up/down loop (2s ease-in-out infinite)
+  - "playPulse" — expanding ring that fades out (2s ease-out infinite)
+  - On hover: animations pause, button scales to 1.15x
+  - Green-tinted drop shadow on the SVG
+
+CSS ADDED (styles.css ~lines 643-663):
+  .video-play-pulse { ... }
+  @keyframes playPulse { 0% -> 100%: 80px to 130px, opacity .7 to 0 }
+  @keyframes playBounce { 0%,100% -> 50%: scale(1) to scale(1.08) }
+
+
+--------------------------------------------------------------
+3. INDEX PAGE — SECTION REORDER
+--------------------------------------------------------------
+File: index.php
+
+WHAT: Moved "Available Compounds" section to be the last section
+      before the footer.
+
+BEFORE ORDER:
+  1. Hero
+  2. Authority Band (stats)
+  3. Compounds Grid          <-- was here
+  4. Education
+  5. Video
+  6. Lab Testing / COA
+  7. Footer
+
+AFTER ORDER:
+  1. Hero
+  2. Authority Band (stats)
+  3. Education
+  4. Video
+  5. Lab Testing / COA
+  6. Compounds Grid          <-- moved here
+  7. Footer
+
+
+--------------------------------------------------------------
+4. COMPOUNDS GRID — COLLAPSE / EXPAND TOGGLE
+--------------------------------------------------------------
+Files: index.php, css/styles.css
+
+WHAT: Grid now shows only ~2 rows by default with a fade-out
+      gradient. A "See All Compounds" button expands to show all.
+
+HTML CHANGES (index.php):
+  - Added class "compounds__grid--collapsed" and id="compoundsGrid" to grid
+  - Added toggle button:
+      <div class="compounds__toggle fade-up">
+        <button class="compounds__see-all" id="compoundsToggle">See All Compounds</button>
+      </div>
+  - Added JS at bottom of file to toggle collapsed class and button text
+
+CSS ADDED (styles.css):
+  .compounds__grid--collapsed {
+    max-height: 340px;  (desktop: 4 per row)
+    overflow: hidden;
+    position: relative;
+  }
+  .compounds__grid--collapsed::after {
+    gradient fade from transparent to white at bottom
+  }
+  .compounds__see-all {
+    green outlined button, mono font, uppercase
+    hover: green fill with white text
+  }
+
+RESPONSIVE:
+  - Tablet (2 per row): max-height: 380px
+  - Mobile (1 per row): max-height: 420px
+
+JS (inline at bottom of index.php):
+  Toggle button switches between "See All Compounds" / "Show Less"
+  Adds/removes .compounds__grid--collapsed class
+
+
+--------------------------------------------------------------
+5. ABOUT PAGE — FOUNDER NAME REMOVED
+--------------------------------------------------------------
+File: about.php
+
+WHAT: Removed personal name per client request (privacy).
+
+BEFORE:
+  Section label: "Founder"
+  Card name:     "Dan Higgins"
+  Card role:     "Founder & Head of Research"
+
+AFTER:
+  Section label: "Who We Are"
+  Card name:     "The ClarityLabs Team"
+  Card role:     "Founded by Athletes, Driven by Science"
+
+NOTE: The 4 bullet points underneath were kept as-is.
+
+
+--------------------------------------------------------------
+6. ABOUT PAGE — CTA SECTION COLOR CHANGE
+--------------------------------------------------------------
+File: about.php
+
+WHAT: Changed "Ready to Explore?" CTA section background from
+      navy to green, so it doesn't blend into the navy footer.
+
+BEFORE:
+  <section class="section section--navy section-border">
+  Button: class="btn btn--green"
+
+AFTER:
+  <section class="section section-border" style="background:var(--green);">
+  Button: style="background:var(--white);color:var(--green);font-weight:600;"
+  Text color: rgba(255,255,255,.7) for better contrast on green
+
+
+============================================================
+  BRAND COLORS REFERENCE
+============================================================
+  --navy:       #0B1E3F
+  --green:      #1A7A6E
+  --green-rule:  #2A9D8F  (the "mild green" used for accents)
+  --green-bg:   #EDF6F5
+  --green-bdr:  #C8E8E4
+  --white:      #FFFFFF
+
+
+============================================================
+  SERVER / HOSTING INFO
+============================================================
+  Host:    62.72.4.20
+  User:    u733630179
+  Domain:  claritylabsbio.com
+  Path:    /public_html/
+  FTP:     FileZilla (TLS)
+
+  Files to upload after changes:
+    - index.php         -> /public_html/
+    - css/styles.css    -> /public_html/css/
+    - about.php         -> /public_html/
+    - images/video/video-thumb.webp -> /public_html/images/video/
+
+
+============================================================
+  NOTES
+============================================================
+  - Always hard refresh (Ctrl+Shift+R) after uploading to
+    clear browser cache
+  - Video still streams from Cloudflare Stream — only the
+    poster thumbnail is local
+  - The header/nav was checked and confirmed clean — no issues
+    found in PHP, CSS, or JS
+  - Menu glitch on live server was likely a cache mismatch
+    between old CSS and new HTML during upload
+
+============================================================
