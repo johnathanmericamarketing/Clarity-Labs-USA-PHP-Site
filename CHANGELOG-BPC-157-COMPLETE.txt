@@ -1,0 +1,209 @@
+================================================================================
+  CLARITY LABS USA — BPC-157 BUILD SUMMARY
+  Completed: March 14, 2026
+  Git Backup: Commit 0eea209 (baseline)
+================================================================================
+
+WHAT WAS BUILT
+──────────────
+Everything needed to sell BPC-157 as the first product — product page, order
+form, and email system. This serves as the template for all future products.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+1. FILES MODIFIED / CREATED
+═══════════════════════════════════════════════════════════════════════════════
+
+  products/product-template.php  — Product detail page (Shopify-style layout)
+  js/main.js                     — Image gallery, order modal JS, form wizard
+  css/styles.css                 — All styling including order modal
+  php/order-mailer.php           — Email system (customer + admin emails)
+  shop.php                       — Shop page with responsive images
+  index.php                      — Home page (hidden product filtering)
+  includes/header.php            — Navigation mega menu (hidden filtering)
+  includes/product-data.php      — Product database (22 products, 5 hidden)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2. PRODUCT PAGE FEATURES (product-template.php)
+═══════════════════════════════════════════════════════════════════════════════
+
+  • Two-column layout: image gallery on left, info panel on right
+  • Image gallery with clickable thumbnails (220px preview → 800px hero swap)
+  • COA image as second thumbnail
+  • "View COA (PDF)" link scrolls to COA download section at bottom
+  • Size selector cards with dynamic price update
+  • "Add to Cart" and "Order Now" buttons open order modal
+  • Size cards in "Available Sizes" section open modal pre-selecting that size
+  • Related compounds section (3 other products)
+  • COA trust section with PDF download button at bottom
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3. ORDER FORM MODAL (3-Step Wizard)
+═══════════════════════════════════════════════════════════════════════════════
+
+  STEP 1 — Product Selection
+  ─────────────────────────────
+  • Product hero: vial image (check_ prefix) + name + tagline + badge
+  • Description text
+  • Trust badges: Third-Party Tested, COA Available, US Shipping
+  • "For research and laboratory use only" disclaimer
+  • Size selector (radio cards) with price display
+  • Quantity input (1-50 vials)
+
+  STEP 2 — Contact Information
+  ─────────────────────────────
+  • First Name, Last Name (side by side)
+  • Email (validated format)
+  • Phone
+  • Per-step validation — won't advance without all fields filled
+
+  STEP 3 — Shipping + Agreements
+  ─────────────────────────────
+  • Street Address
+  • City, State, ZIP (inline row)
+  • ☑ Age verification (21+)
+  • ☑ Research use acknowledgment
+  • Submit Order button
+
+  GENERAL
+  ─────────────────────────────
+  • Step indicator (1-2-3) with active/done states
+  • Honeypot anti-spam field
+  • AJAX submission (no page reload)
+  • Success screen with green checkmark after submit
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4. EMAIL SYSTEM (php/order-mailer.php)
+═══════════════════════════════════════════════════════════════════════════════
+
+  FROM ADDRESS:  order@claritylabsbio.com
+  ADMIN EMAIL:   johnathan.mericamarketing@gmail.com
+
+  CUSTOMER CONFIRMATION EMAIL
+  ─────────────────────────────
+  • Navy header with "CLARITY LABS USA" branding
+  • Green accent bar
+  • Checkmark banner: "Order Received, [Name]!"
+  • Order reference number (CL-XXXXXXXX)
+  • Product card with INLINE vial image (CID embedded, not URL)
+  • Order details table: product, size, price/vial, quantity, est. total
+  • Shipping address card
+  • COA PDF ATTACHED to the email automatically
+  • Green callout: "Certificate of Analysis Attached"
+  • "What Happens Next?" numbered steps
+  • Contact Us button
+  • Trust badges row
+  • Navy footer with copyright
+
+  ADMIN NOTIFICATION EMAIL
+  ─────────────────────────────
+  • "NEW ORDER RECEIVED" header with date + reference
+  • Quick-glance boxes: Product | Size/Qty | Est. Total
+  • Customer card: name, clickable email, clickable phone
+  • Shipping address
+  • "Reply to Customer" button (Reply-To set to customer email)
+
+  TECHNICAL DETAILS
+  ─────────────────────────────
+  • MIME multipart email for PDF attachment + inline images
+  • Base64 encoded attachments
+  • Server-side validation (all required fields + email format)
+  • Honeypot spam check
+  • Product slug passed to locate COA PDF automatically
+
+
+═══════════════════════════════════════════════════════════════════════════════
+5. IMAGE NAMING CONVENTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+  All product images go in:  images/products/{slug}/images/
+  COA PDFs go in:            images/products/{slug}/pdf/
+
+  FILENAME PATTERN          USED FOR
+  ──────────────────────    ─────────────────────────────────────
+  *800*                     Hero/main image on product page
+  *220*                     Thumbnail preview (small)
+  check_*                   Order modal product image (priority 1)
+  *mockup*                  Order modal fallback image (priority 2)
+  *mobile*                  Mobile-specific shop card image
+  *COA*                     Certificate of Analysis thumbnail
+  *.pdf                     COA PDF (auto-attached to emails)
+
+  BPC-157 CURRENT FILES:
+  • bpc_157_800px_v2.webp           — Hero image
+  • bpc_157_small_perview_220px_v5  — Thumb preview
+  • check_bpc_157.webp              — Order modal image
+  • bpc-157_10mg_mockup_nobackground— Mockup (fallback)
+  • bpc_157_mobile_341_220.webp     — Mobile shop card
+  • ClarityLabsUSA_BPC157_COA_image — COA thumbnail
+  • background_mockup.png           — Background asset
+
+
+═══════════════════════════════════════════════════════════════════════════════
+6. SHOP PAGE (shop.php)
+═══════════════════════════════════════════════════════════════════════════════
+
+  • Uses <picture> element for mobile-specific images
+  • <source media="(max-width: 768px)"> loads mobile image
+  • object-fit: cover fills image box completely
+  • scandir() instead of glob() (Windows compatibility fix)
+  • Hidden products filtered out
+
+
+═══════════════════════════════════════════════════════════════════════════════
+7. HIDDEN PRODUCTS (not shown on site)
+═══════════════════════════════════════════════════════════════════════════════
+
+  These have 'hidden' => true in product-data.php:
+  • Cagrilintide
+  • CJC-1295 (No DAC)
+  • Ipamorelin
+  • DSIP
+  • IGF-1 LR3
+
+  Filtered from: Home page, Shop page, Navigation menu
+
+
+═══════════════════════════════════════════════════════════════════════════════
+8. ADDING THE NEXT PRODUCT — CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+  1. CREATE IMAGE FOLDER
+     images/products/{slug}/images/
+     images/products/{slug}/pdf/
+
+  2. ADD IMAGES (follow naming conventions above)
+     □ {name}_800px.webp         — Hero image
+     □ {name}_220px.webp         — Thumbnail preview
+     □ check_{name}.webp         — Order modal image
+     □ {name}_mobile.webp        — Mobile shop card (optional)
+     □ COA image                 — COA thumbnail
+     □ COA PDF in /pdf/ folder   — Auto-attached to customer email
+
+  3. PRODUCT DATA ALREADY EXISTS
+     All 22 products are already defined in includes/product-data.php
+     with name, tagline, badge, description, sizes, pricing, etc.
+     Just add images and the product page works automatically.
+
+  4. VERIFY
+     □ Product page loads with images
+     □ Thumbnails swap correctly
+     □ Order modal shows product image
+     □ Shop card shows image (desktop + mobile)
+     □ COA PDF downloads from product page
+     □ Order form submits and emails send with COA attached
+
+
+═══════════════════════════════════════════════════════════════════════════════
+9. STILL TODO (Future)
+═══════════════════════════════════════════════════════════════════════════════
+
+  □ Test email delivery from live server (needs SMTP or hosting mail setup)
+  □ Add images for remaining 16 active products
+  □ Add ecommerce/payment when ready (replace order form)
+  □ Set up order@claritylabsbio.com email on hosting
+
+================================================================================
