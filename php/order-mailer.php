@@ -75,44 +75,6 @@ if ($productSlug) {
     }
 }
 
-// ── Find product image for email (check_ image or 800px) ──
-$productImgCid = '';
-$productImgPath = '';
-$productImgName = '';
-if ($productSlug) {
-    $imgDir = __DIR__ . '/../images/products/' . $productSlug . '/images/';
-    if (is_dir($imgDir)) {
-        // Try check_ image first
-        foreach (scandir($imgDir) as $f) {
-            if (stripos($f, 'check_') === 0 && preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) {
-                $productImgPath = realpath($imgDir . $f);
-                $productImgName = $f;
-                break;
-            }
-        }
-        // Fallback to 800px
-        if (!$productImgPath) {
-            foreach (scandir($imgDir) as $f) {
-                if (stripos($f, '800') !== false && preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) {
-                    $productImgPath = realpath($imgDir . $f);
-                    $productImgName = $f;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-// ── Determine image MIME type ──
-function getImageMime($filename) {
-    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-    $map = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
-    return $map[$ext] ?? 'application/octet-stream';
-}
-
-// ── Build MIME boundary ──
-$boundary = md5(uniqid(time()));
-$productImgCid = 'product-image-' . $boundary;
 
 
 // ─────────────────────────────────────────────
@@ -176,19 +138,22 @@ $customerHtml = '<!DOCTYPE html>
     </td>
   </tr>
 
-  <!-- ═══ PRODUCT CARD (like Step 1) ═══ -->
+  <!-- ═══ PRODUCT CARD ═══ -->
   <tr>
     <td style="padding:0 32px 24px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0B1E3F; border-radius:8px; overflow:hidden;">
         <tr>
-          ' . ($productImgPath && file_exists($productImgPath) ? '
-          <td width="130" style="padding:20px; vertical-align:middle; text-align:center;">
-            <img src="cid:' . $productImgCid . '" alt="' . $product . '" width="100" style="width:100px; height:auto;">
-          </td>' : '') . '
-          <td style="padding:20px ' . ($productImgPath ? '20px 20px 0' : '20px') . '; vertical-align:middle;">
-            <h3 style="margin:0 0 4px; font-size:20px; color:#ffffff; font-weight:700;">' . $product . '</h3>
-            <p style="margin:0 0 8px; font-size:10px; color:#9BA3B5; letter-spacing:2px; text-transform:uppercase;">Systemic Recovery Support Peptide</p>
-            <span style="display:inline-block; background:rgba(42,157,143,0.15); color:#2A9D8F; font-size:11px; padding:4px 12px; border-radius:4px; letter-spacing:1px;">&#10003; Research Grade</span>
+          <td style="padding:24px; vertical-align:middle;">
+            <h3 style="margin:0 0 4px; font-size:22px; color:#ffffff; font-weight:700;">' . $product . '</h3>
+            <p style="margin:0 0 10px; font-size:10px; color:#9BA3B5; letter-spacing:2px; text-transform:uppercase;">Systemic Recovery Support Peptide</p>
+            <span style="display:inline-block; background:rgba(42,157,143,0.15); color:#2A9D8F; font-size:11px; padding:5px 14px; border-radius:4px; letter-spacing:1px;">&#10003; Research Grade</span>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+              <tr>
+                <td style="font-size:11px; color:#9BA3B5;">&#10003; Third-Party Tested</td>
+                <td style="font-size:11px; color:#9BA3B5;">&#10003; COA Available</td>
+                <td style="font-size:11px; color:#9BA3B5;">&#10003; US Shipping</td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
@@ -478,52 +443,27 @@ $adminHtml = '<!DOCTYPE html>
 // SEND EMAILS
 // ═══════════════════════════════════════════════
 
-// ── Helper: send multipart email with optional attachments & inline images ──
-function sendMimeEmail($to, $subject, $htmlBody, $from, $fromName, $replyTo, $attachments = [], $inlineImages = []) {
-    $boundary     = md5(uniqid(time()));
-    $boundaryAlt  = md5('alt' . uniqid(time()));
-    $boundaryRel  = md5('rel' . uniqid(time()));
+// ── Helper: send HTML email with optional PDF attachment ──
+function sendMimeEmail($to, $subject, $htmlBody, $from, $fromName, $replyTo, $attachments = []) {
+    $boundary = '----=_Part_' . md5(uniqid(microtime(true)));
 
     $headers  = "MIME-Version: 1.0\r\n";
     $headers .= "From: $fromName <$from>\r\n";
     $headers .= "Reply-To: $replyTo\r\n";
+    $headers .= "X-Mailer: ClarityLabsUSA\r\n";
 
-    $hasAttachments = !empty($attachments);
-    $hasInline      = !empty($inlineImages);
-
-    if ($hasAttachments || $hasInline) {
+    if (!empty($attachments)) {
         $headers .= "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n";
 
-        $body = "--$boundary\r\n";
+        // HTML part
+        $body  = "--$boundary\r\n";
+        $body .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
+        $body .= quoted_printable_encode($htmlBody) . "\r\n\r\n";
 
-        if ($hasInline) {
-            // Related part (HTML + inline images)
-            $body .= "Content-Type: multipart/related; boundary=\"$boundaryRel\"\r\n\r\n";
-            $body .= "--$boundaryRel\r\n";
-            $body .= "Content-Type: text/html; charset=UTF-8\r\n";
-            $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
-            $body .= chunk_split(base64_encode($htmlBody)) . "\r\n";
-
-            // Inline images
-            foreach ($inlineImages as $img) {
-                $imgData = file_get_contents($img['path']);
-                $body .= "--$boundaryRel\r\n";
-                $body .= "Content-Type: " . $img['mime'] . "; name=\"" . $img['name'] . "\"\r\n";
-                $body .= "Content-Transfer-Encoding: base64\r\n";
-                $body .= "Content-ID: <" . $img['cid'] . ">\r\n";
-                $body .= "Content-Disposition: inline; filename=\"" . $img['name'] . "\"\r\n\r\n";
-                $body .= chunk_split(base64_encode($imgData)) . "\r\n";
-            }
-            $body .= "--$boundaryRel--\r\n\r\n";
-        } else {
-            // Just HTML
-            $body .= "Content-Type: text/html; charset=UTF-8\r\n";
-            $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
-            $body .= chunk_split(base64_encode($htmlBody)) . "\r\n";
-        }
-
-        // Attachments
+        // PDF attachment(s)
         foreach ($attachments as $att) {
+            if (!file_exists($att['path'])) continue;
             $attData = file_get_contents($att['path']);
             $body .= "--$boundary\r\n";
             $body .= "Content-Type: application/pdf; name=\"" . $att['name'] . "\"\r\n";
@@ -549,18 +489,7 @@ if ($coaPdfPath && file_exists($coaPdfPath)) {
     ];
 }
 
-// ── Build inline images array ──
-$inlineImages = [];
-if ($productImgPath && file_exists($productImgPath)) {
-    $inlineImages[] = [
-        'path' => $productImgPath,
-        'name' => $productImgName,
-        'cid'  => $productImgCid,
-        'mime' => getImageMime($productImgName)
-    ];
-}
-
-// 1) Customer confirmation (with COA attachment + inline product image)
+// 1) Customer confirmation (with COA PDF attachment)
 $customerSent = sendMimeEmail(
     $email,
     $customerSubject,
@@ -568,8 +497,7 @@ $customerSent = sendMimeEmail(
     $fromEmail,
     $fromName,
     $fromEmail,
-    $attachments,
-    $inlineImages
+    $attachments
 );
 
 // 2) Admin notification (Reply-To = customer email, no attachments)
