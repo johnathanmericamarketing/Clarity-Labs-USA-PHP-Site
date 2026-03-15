@@ -1,0 +1,11 @@
+# MySQL data
+mysql-8.4/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
