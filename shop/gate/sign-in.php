@@ -303,7 +303,7 @@ $page_title = 'Sign In';
 <body>
   <div class="signin-gate">
     <div class="signin-gate__card">
-      <img src="<?= $base_path ?>Logo/ClarityLabsUSA-icon-256px.webp" alt="Clarity Labs USA" class="signin-gate__logo">
+      <img src="<?= R2_PUBLIC_URL ?>/clarity-logo/icon_no_background.webp" alt="Clarity Labs USA" class="signin-gate__logo">
       <div class="signin-gate__brand">Clarity<br>Labs <span>USA</span></div>
       <div class="signin-gate__tagline">Clarity &bull; Confidence &bull; Simplicity</div>
 
