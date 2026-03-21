@@ -1532,6 +1532,7 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   gap: 24px;
 }
 .shop-card {
+  position: relative;
   background: var(--white);
   border: 1px solid var(--rule);
   width: calc(33.333% - 16px);
