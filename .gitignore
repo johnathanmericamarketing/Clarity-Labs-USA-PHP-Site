@@ -1,6 +1,10 @@
 # MySQL data
 mysql-8.4/
 
+# Environment / secrets
+config/.env
+*.env
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -9,3 +13,6 @@ desktop.ini
 # IDE
 .vscode/
 .idea/
+
+# Claude plans (local only)
+.claude/plans/
