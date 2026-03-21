@@ -1,8 +1,7 @@
 <?php
-$current_page = 'shop';
-$page_title = 'Shop Research Compounds';
-$page_description = 'Browse ClarityLabs USA research-grade peptides. All compounds third-party tested with Certificates of Analysis. US-based fulfillment.';
-include 'includes/product-data.php';
+// Redirect to shop subdomain
+header('Location: https://shop.claritylabsusa.com/', true, 301);
+exit;
 ?>
 <!DOCTYPE html>
 <html lang="en">
