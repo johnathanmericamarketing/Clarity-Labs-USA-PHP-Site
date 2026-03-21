@@ -464,8 +464,12 @@ $page_title = 'Sign In';
         const data = await res.json();
 
         if (data.success) {
-          const redirect = formData.get('redirect') || '/';
-          window.location.href = '<?= SHOP_URL ?>' + redirect;
+          if (data.must_change_password) {
+            window.location.href = '<?= SHOP_URL ?>/account/change-password';
+          } else {
+            const redirect = formData.get('redirect') || '/';
+            window.location.href = '<?= SHOP_URL ?>' + redirect;
+          }
         } else {
           showMessage('error', data.error || 'Login failed. Please check your credentials.');
           btn.disabled = false;

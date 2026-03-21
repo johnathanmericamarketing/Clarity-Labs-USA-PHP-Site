@@ -38,9 +38,16 @@ switch ($action) {
             // Store customer data + token in session
             set_customer($result['customer'] ?? [], $result['token']);
 
+            // Check if password change is required
+            $mustChangePassword = !empty($result['must_change_password']);
+            if ($mustChangePassword) {
+                $_SESSION['must_change_password'] = true;
+            }
+
             echo json_encode([
-                'success'  => true,
-                'customer' => $result['customer'] ?? [],
+                'success'              => true,
+                'customer'             => $result['customer'] ?? [],
+                'must_change_password' => $mustChangePassword,
             ]);
         } else {
             echo json_encode([
@@ -148,6 +155,47 @@ switch ($action) {
             'success' => true,
             'message' => 'If an account exists with that email, you\'ll receive a password reset link shortly.',
         ]);
+        break;
+
+    /* ──────────────────────────────────────────
+       CHANGE PASSWORD (first login)
+       ────────────────────────────────────────── */
+    case 'change-password':
+        csrf_verify();
+
+        if (!is_logged_in()) {
+            echo json_encode(['success' => false, 'error' => 'You must be logged in.']);
+            exit;
+        }
+
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['new_password_confirmation'] ?? '';
+
+        if (strlen($newPassword) < 8) {
+            echo json_encode(['success' => false, 'error' => 'Password must be at least 8 characters.']);
+            exit;
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            echo json_encode(['success' => false, 'error' => 'Passwords do not match.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->changePassword([
+            'new_password' => $newPassword,
+            'new_password_confirmation' => $confirmPassword,
+        ], get_customer_token());
+
+        if (!empty($result['success'])) {
+            unset($_SESSION['must_change_password']);
+            echo json_encode(['success' => true, 'message' => 'Password updated successfully.']);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => $result['message'] ?? $result['error'] ?? 'Failed to update password.',
+            ]);
+        }
         break;
 
     default:
