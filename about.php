@@ -143,7 +143,7 @@ $page_description = 'Learn about ClarityLabs USA — our mission, founder, and c
   <div class="section-inner" style="text-align:center;">
     <h2 style="color:var(--white);" class="fade-up">Ready to Explore?</h2>
     <p class="fade-up stagger-1" style="color:rgba(255,255,255,.7);max-width:480px;margin:16px auto 28px;">Browse our full catalog of research-grade compounds. Every batch independently tested.</p>
-    <a href="shop.php" class="btn fade-up stagger-2" style="background:var(--white);color:var(--green);font-weight:600;">Browse Compounds</a>
+    <a href="https://shop.claritylabsusa.com/" class="btn fade-up stagger-2" style="background:var(--white);color:var(--green);font-weight:600;">Browse Compounds</a>
   </div>
 </section>
 

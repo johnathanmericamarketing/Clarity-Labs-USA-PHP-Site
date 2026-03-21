@@ -27,7 +27,7 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
     <hr class="teal-rule teal-rule--center fade-up stagger-2">
     <p class="hero__text fade-up stagger-2">ClarityLabs provides high-purity research peptides with transparent Certificates of Analysis and independent lab verification. Trusted by the research community since 2018.</p>
     <div class="hero__ctas fade-up stagger-3">
-      <a href="shop.php" class="btn btn--green">Browse Research Peptides</a>
+      <a href="https://shop.claritylabsusa.com/" class="btn btn--green">Browse Research Peptides</a>
       <a href="#testing" class="btn btn--ghost">View Testing Standards &rarr;</a>
     </div>
     <p class="hero__micro fade-up stagger-4">All compounds sold for research use only.</p>
@@ -80,7 +80,7 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
         <hr class="teal-rule teal-rule--wide">
         <p>Peptides are short chains of amino acids that act as signaling molecules throughout the body. Researchers study peptides for their potential roles in numerous biological processes &mdash; from cellular repair to immune regulation.</p>
         <p>As scientific literature has grown, so has demand for research-grade compounds with verifiable purity and documented sourcing.</p>
-        <a href="shop.php" class="education__cta-link">Explore Available Compounds &rarr;</a>
+        <a href="https://shop.claritylabsusa.com/" class="education__cta-link">Explore Available Compounds &rarr;</a>
       </div>
       <div class="education__accent slide-left stagger-2"></div>
       <div class="education__right slide-right">
@@ -185,7 +185,7 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
             <span>An example of a peptide — BPC-157, which consists of 15 amino acids</span>
           </div>
         </div>
-        <a href="shop.php" class="video-section__cta">Browse Our Compounds &rarr;</a>
+        <a href="https://shop.claritylabsusa.com/" class="video-section__cta">Browse Our Compounds &rarr;</a>
       </div>
     </div>
   </div>
@@ -282,7 +282,7 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
             <span class="lab-badge">&#10003; Purity Tested</span>
             <span class="lab-badge">&#10003; Contaminant Screened</span>
           </div>
-          <a href="shop.php" class="lab-panel__cta">Browse Batch Certificates &rarr;</a>
+          <a href="https://shop.claritylabsusa.com/" class="lab-panel__cta">Browse Batch Certificates &rarr;</a>
           <p class="lab-panel__micro">Every lot tested independently before distribution.</p>
         </div>
       </div>
