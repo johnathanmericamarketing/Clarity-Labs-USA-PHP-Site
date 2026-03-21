@@ -380,7 +380,12 @@ $page_title = 'Sign In';
                 <option value="<?= $m ?>"><?= date('F', mktime(0, 0, 0, $m, 1)) ?></option>
               <?php endfor; ?>
             </select>
-            <input type="number" name="birth_year" id="reg-year" class="gate-form__input" placeholder="1990" min="1920" max="<?= date('Y') - 21 ?>" required style="padding: 12px 16px;">
+            <input type="number" name="birth_year" id="reg-year" class="gate-form__input" list="year-list" placeholder="1990" min="1920" max="<?= date('Y') - 21 ?>" required style="padding: 12px 16px;">
+            <datalist id="year-list">
+              <?php for ($y = date('Y') - 21; $y >= date('Y') - 100; $y--): ?>
+                <option value="<?= $y ?>">
+              <?php endfor; ?>
+            </datalist>
           </div>
         </div>
 
