@@ -1,9 +1,41 @@
 <?php
 $bp = isset($base_path) ? $base_path : '';
-if (!isset($products)) { include (isset($base_path) ? $base_path : '') . 'includes/product-data.php'; }
+$footerShopUrl = defined('SHOP_URL') ? SHOP_URL : 'https://shop.claritylabsusa.com';
+$footerSiteUrl = defined('SITE_URL') ? SITE_URL : 'https://claritylabsusa.com';
+$footerIsShop = (strpos($_SERVER['HTTP_HOST'] ?? '', 'shop.') === 0);
 
-// Pick top compounds for footer (first 6)
-$footer_compounds = array_slice($products, 0, 6, true);
+// Load footer compounds from API if available
+$footer_compounds = [];
+if (isset($apiMenuProducts) && !empty($apiMenuProducts)) {
+    $footer_compounds = array_slice($apiMenuProducts, 0, 6);
+} elseif (isset($homeApiProducts) && !empty($homeApiProducts)) {
+    $footer_compounds = array_slice($homeApiProducts, 0, 6);
+} else {
+    // Try API
+    $footerConfigFile = __DIR__ . '/../config/config.php';
+    if (!file_exists($footerConfigFile)) $footerConfigFile = __DIR__ . '/config/config.php';
+    if (!defined('CLARITY_API_KEY') && file_exists($footerConfigFile)) { require_once $footerConfigFile; }
+    if (defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '' && CLARITY_API_KEY !== 'your-api-key-here') {
+        if (!class_exists('ClarityApiClient')) {
+            $apiFile = __DIR__ . '/api-client.php';
+            if (!file_exists($apiFile)) $apiFile = __DIR__ . '/../includes/api-client.php';
+            if (file_exists($apiFile)) require_once $apiFile;
+        }
+        if (class_exists('ClarityApiClient')) {
+            $footerApi = new ClarityApiClient();
+            $footerResponse = $footerApi->getProducts(['per_page' => 6]);
+            $footer_compounds = $footerResponse['data'] ?? [];
+        }
+    }
+    // Final fallback: static data
+    if (empty($footer_compounds)) {
+        if (!isset($products)) { include $bp . 'includes/product-data.php'; }
+        $footer_compounds = [];
+        foreach (array_slice($products, 0, 6, true) as $fslug => $fp) {
+            $footer_compounds[] = ['name' => $fp['name'], 'sku' => $fslug];
+        }
+    }
+}
 ?>
 <footer class="footer">
   <div class="footer__inner">
@@ -20,27 +52,27 @@ $footer_compounds = array_slice($products, 0, 6, true);
       </div>
       <div class="footer__col">
         <h4 class="footer__heading">Navigation</h4>
-        <a href="<?php echo $bp; ?>index.php">Home</a>
-        <a href="<?php echo $bp; ?>shop.php">Shop</a>
-        <a href="<?php echo $bp; ?>about.php">About Us</a>
-        <a href="<?php echo $bp; ?>faq.php">FAQ</a>
-        <a href="<?php echo $bp; ?>contact.php">Contact</a>
+        <a href="<?= $footerSiteUrl ?>">Home</a>
+        <a href="<?= $footerShopUrl ?>/">Shop</a>
+        <a href="<?= $footerSiteUrl ?>/about">About Us</a>
+        <a href="<?= $footerSiteUrl ?>/faq">FAQ</a>
+        <a href="<?= $footerSiteUrl ?>/contact">Contact</a>
       </div>
       <div class="footer__col">
         <h4 class="footer__heading">Popular Compounds</h4>
-        <?php foreach ($footer_compounds as $fslug => $fp): ?>
-        <a href="<?php echo $bp; ?>products/index.php?product=<?php echo $fslug; ?>"><?php echo htmlspecialchars($fp['name']); ?></a>
+        <?php foreach ($footer_compounds as $fc): ?>
+        <a href="<?= $footerShopUrl ?>/product?sku=<?= urlencode($fc['sku'] ?? '') ?>"><?= htmlspecialchars($fc['name'] ?? '') ?></a>
         <?php endforeach; ?>
       </div>
       <div class="footer__col">
         <h4 class="footer__heading">Quality</h4>
-        <a href="<?php echo $bp; ?>index.php#testing">Lab Testing</a>
-        <a href="<?php echo $bp; ?>shop.php">All Compounds</a>
-        <a href="<?php echo $bp; ?>faq.php">Testing & COAs</a>
+        <a href="<?= $footerSiteUrl ?>/#testing">Lab Testing</a>
+        <a href="<?= $footerShopUrl ?>/">All Compounds</a>
+        <a href="<?= $footerSiteUrl ?>/faq">Testing & COAs</a>
       </div>
     </div>
     <div class="footer__bottom">
-      <p class="footer__disclaimer">All compounds are sold strictly for research and laboratory use only. Not for human consumption. By purchasing, you agree to our terms of use.</p>
+      <p class="footer__disclaimer"><?= defined('COMPANY_DISCLAIMER') ? COMPANY_DISCLAIMER : 'All compounds are sold strictly for research and laboratory use only. Not for human consumption. By purchasing, you agree to our terms of use.' ?></p>
       <p class="footer__copyright">&copy; <?php echo date('Y'); ?> ClarityLabs USA. All rights reserved.</p>
     </div>
   </div>
