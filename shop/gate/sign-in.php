@@ -501,8 +501,26 @@ $page_title = 'Sign In';
 
         if (data.success) {
           const email = formData.get('email');
-          showMessage('success', '<strong>Account Created!</strong><br><br>We just sent an email to <strong>' + email + '</strong>.<br><br>Here\'s what to do next:<br>1. <strong>Open your email</strong> and find the message from Clarity Labs USA Support<br>2. Click the <strong>"Verify Email & Sign In"</strong> button in the email<br>3. This will verify your account and bring you back here<br>4. <strong>Sign in</strong> using your email and the <strong>temporary password</strong> from the email<br>5. You\'ll be asked to <strong>set a new password</strong> on your first login<br><br>Didn\'t get the email? Check your spam folder or <a href="' + '<?= SHOP_URL ?>' + '/support" style="color: #065F46; font-weight: 600;">contact support</a>.');
-          showTab('login');
+          // Hide the form tabs and show a full success panel
+          document.querySelector('.gate-tabs').style.display = 'none';
+          document.getElementById('form-register').style.display = 'none';
+          document.getElementById('form-login').style.display = 'none';
+          messageBox.innerHTML = '<div style="text-align: center; padding: 20px 0;">' +
+            '<div style="font-size: 48px; margin-bottom: 12px;">&#9993;</div>' +
+            '<h2 style="font-family: var(--font-display); font-size: 24px; color: var(--navy); margin-bottom: 12px;">You\'re Almost There!</h2>' +
+            '<p style="font-size: 15px; color: var(--gray-600); line-height: 1.7; margin-bottom: 24px;">We just sent an email to <strong>' + email + '</strong> with everything you need to get started.</p>' +
+            '<div style="background: var(--green-bg); border: 1px solid var(--green-bdr); border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 20px;">' +
+              '<p style="font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 12px;">Here\'s what happens next:</p>' +
+              '<div style="font-size: 14px; color: var(--gray-600); line-height: 2;">' +
+                '<strong style="color: var(--green);">Step 1:</strong> Open your email and find the message from <strong>Clarity Labs USA Support</strong><br>' +
+                '<strong style="color: var(--green);">Step 2:</strong> Click the <strong>"Verify Email & Sign In"</strong> button to activate your account<br>' +
+                '<strong style="color: var(--green);">Step 3:</strong> Sign in using your email and the <strong>temporary password</strong> included in the email<br>' +
+                '<strong style="color: var(--green);">Step 4:</strong> You\'ll be prompted to <strong>create your own secure password</strong> — this replaces the temporary one<br>' +
+                '<strong style="color: var(--green);">Step 5:</strong> Start browsing our research-grade peptide catalog' +
+              '</div>' +
+            '</div>' +
+            '<p style="font-size: 13px; color: var(--gray-400);">Didn\'t receive the email? Check your spam or junk folder, or <a href="<?= SHOP_URL ?>/support" style="color: var(--green); font-weight: 600;">contact our support team</a>.</p>' +
+          '</div>';
         } else {
           showMessage('error', data.error || 'Registration failed. Please try again.');
           btn.disabled = false;
