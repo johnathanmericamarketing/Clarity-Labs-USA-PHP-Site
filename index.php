@@ -301,26 +301,55 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
         <p class="section-label">Research Compounds</p>
         <h2>Available Compounds</h2>
       </div>
-      <a href="shop.php" class="compounds__link">View All Compounds &rarr;</a>
+      <a href="https://shop.claritylabsusa.com/" class="compounds__link">View All Compounds &rarr;</a>
     </div>
     <div class="compounds__grid compounds__grid--collapsed" id="compoundsGrid">
       <?php
-      include 'includes/product-data.php';
-      $i = 0;
-      foreach ($products as $pslug => $p):
-        if (!empty($p['hidden'])) continue;
-        $stagger = ($i % 4) + 1; ?>
-      <a href="products/index.php?product=<?php echo $pslug; ?>" class="compound-card fade-up stagger-<?php echo $stagger; ?>">
-        <span class="compound-card__cat"><?php echo htmlspecialchars($p['category']); ?></span>
-        <span class="compound-card__name"><?php echo htmlspecialchars($p['name']); ?></span>
-        <span class="compound-card__desc"><?php echo htmlspecialchars($p['short_desc']); ?></span>
-        <span class="compound-card__link">View Compound &rarr;</span>
-      </a>
-      <?php $i++; endforeach; ?>
+      // Load from API if available, otherwise static
+      $homeApiProducts = null;
+      $apiConfigFile = __DIR__ . '/config/config.php';
+      if (file_exists($apiConfigFile)) {
+          if (!defined('CLARITY_API_KEY')) { require_once $apiConfigFile; }
+          if (defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '' && CLARITY_API_KEY !== 'your-api-key-here') {
+              require_once __DIR__ . '/includes/api-client.php';
+              $homeApi = new ClarityApiClient();
+              $homeResponse = $homeApi->getProducts(['per_page' => 50]);
+              $homeApiProducts = $homeResponse['data'] ?? null;
+          }
+      }
+
+      if (!empty($homeApiProducts)):
+        $i = 0;
+        foreach ($homeApiProducts as $hp):
+          $stagger = ($i % 4) + 1; ?>
+        <a href="https://shop.claritylabsusa.com/product?sku=<?php echo urlencode($hp['sku'] ?? ''); ?>" class="compound-card fade-up stagger-<?php echo $stagger; ?>">
+          <span class="compound-card__cat"><?php echo htmlspecialchars($hp['category'] ?? ''); ?></span>
+          <span class="compound-card__name"><?php echo htmlspecialchars($hp['name'] ?? ''); ?></span>
+          <span class="compound-card__desc"><?php echo htmlspecialchars($hp['short_description'] ?? ''); ?></span>
+          <span class="compound-card__link">View Compound &rarr;</span>
+        </a>
+        <?php $i++; endforeach;
+      else:
+        // Fallback to static data
+        include 'includes/product-data.php';
+        $i = 0;
+        foreach ($products as $pslug => $p):
+          if (!empty($p['hidden'])) continue;
+          $stagger = ($i % 4) + 1; ?>
+        <a href="https://shop.claritylabsusa.com/product?sku=<?php echo urlencode($pslug); ?>" class="compound-card fade-up stagger-<?php echo $stagger; ?>">
+          <span class="compound-card__cat"><?php echo htmlspecialchars($p['category']); ?></span>
+          <span class="compound-card__name"><?php echo htmlspecialchars($p['name']); ?></span>
+          <span class="compound-card__desc"><?php echo htmlspecialchars($p['short_desc']); ?></span>
+          <span class="compound-card__link">View Compound &rarr;</span>
+        </a>
+        <?php $i++; endforeach;
+      endif; ?>
     </div>
+    <?php if (empty($homeApiProducts) || count($homeApiProducts) > 8): ?>
     <div class="compounds__toggle fade-up">
       <button class="compounds__see-all" id="compoundsToggle">See All Compounds</button>
     </div>
+    <?php endif; ?>
   </div>
 </section>
 
