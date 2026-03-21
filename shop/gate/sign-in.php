@@ -496,7 +496,8 @@ $page_title = 'Sign In';
         const data = await res.json();
 
         if (data.success) {
-          showMessage('success', '<strong>Account Created!</strong><br><br>Here\'s what happens next:<br>1. Check your email for a <strong>temporary password</strong><br>2. Come back here and <strong>sign in</strong> with that password<br>3. You\'ll be asked to <strong>set a new password</strong> on your first login<br><br>Didn\'t get the email? Check your spam folder or <a href="' + '<?= SHOP_URL ?>' + '/support" style="color: #065F46; font-weight: 600;">contact support</a>.');
+          const email = formData.get('email');
+          showMessage('success', '<strong>Account Created!</strong><br><br>We just sent an email to <strong>' + email + '</strong>.<br><br>Here\'s what to do next:<br>1. <strong>Open your email</strong> and find the message from Clarity Labs USA Support<br>2. Click the <strong>"Verify Email & Sign In"</strong> button in the email<br>3. This will verify your account and bring you back here<br>4. <strong>Sign in</strong> using your email and the <strong>temporary password</strong> from the email<br>5. You\'ll be asked to <strong>set a new password</strong> on your first login<br><br>Didn\'t get the email? Check your spam folder or <a href="' + '<?= SHOP_URL ?>' + '/support" style="color: #065F46; font-weight: 600;">contact support</a>.');
           showTab('login');
         } else {
           showMessage('error', data.error || 'Registration failed. Please try again.');
