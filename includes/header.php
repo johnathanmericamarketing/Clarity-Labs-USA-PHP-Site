@@ -62,25 +62,18 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
     </a>
     <nav class="header__nav" id="nav">
       <a href="<?= $isShopSite ? $siteUrl : $bp . 'index.php' ?>" class="header__link <?php echo (isset($current_page) && $current_page === 'home') ? 'header__link--active' : ''; ?>">Home</a>
+      <?php if ($isShopSite): ?>
+      <!-- Shop site: mega menu with API products -->
       <div class="header__dropdown">
-        <a href="<?= $isShopSite ? $shopUrl . '/' : $bp . 'shop.php' ?>" class="header__link <?php echo (isset($current_page) && $current_page === 'shop') ? 'header__link--active' : ''; ?>">Shop <span class="header__chevron">&#9662;</span></a>
+        <a href="<?= $shopUrl ?>/" class="header__link <?php echo (isset($current_page) && $current_page === 'shop') ? 'header__link--active' : ''; ?>">Shop <span class="header__chevron">&#9662;</span></a>
         <div class="mega-menu" id="mega-menu">
           <div class="mega-menu__inner">
             <?php foreach ($menu_groups as $cat => $group): ?>
             <div class="mega-menu__col">
               <h4 class="mega-menu__heading"><?php echo htmlspecialchars($cat); ?></h4>
-              <?php foreach ($group as $mslug => $mp):
-                if ($isShopSite) {
-                    $menuItemName = htmlspecialchars($mp['name'] ?? '');
-                    $menuItemSku = urlencode($mp['sku'] ?? '');
-                    $menuItemUrl = $shopUrl . '/product?sku=' . $menuItemSku;
-                } else {
-                    $menuItemName = htmlspecialchars($mp['name'] ?? '');
-                    $menuItemUrl = $bp . 'products/index.php?product=' . $mslug;
-                }
-              ?>
-              <a href="<?= $menuItemUrl ?>" class="mega-menu__item">
-                <span class="mega-menu__item-name"><?= $menuItemName ?></span>
+              <?php foreach ($group as $mp): ?>
+              <a href="<?= $shopUrl ?>/product?sku=<?= urlencode($mp['sku'] ?? '') ?>" class="mega-menu__item">
+                <span class="mega-menu__item-name"><?= htmlspecialchars($mp['name'] ?? '') ?></span>
               </a>
               <?php endforeach; ?>
             </div>
@@ -90,12 +83,16 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
                 <p class="mega-menu__promo-label">Quality Assurance</p>
                 <h4 class="mega-menu__promo-title">Every Batch Tested</h4>
                 <p class="mega-menu__promo-text">Independent third-party COA on every compound, every lot.</p>
-                <a href="<?= $isShopSite ? $shopUrl . '/' : $bp . 'shop.php' ?>" class="btn btn--green btn--sm">Browse All &rarr;</a>
+                <a href="<?= $shopUrl ?>/" class="btn btn--green btn--sm">Browse All &rarr;</a>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <?php else: ?>
+      <!-- Main site: simple Shop link, no dropdown -->
+      <a href="<?= $shopUrl ?>/" class="header__link <?php echo (isset($current_page) && $current_page === 'shop') ? 'header__link--active' : ''; ?>">Shop</a>
+      <?php endif; ?>
       <a href="<?= $isShopSite ? $siteUrl . '/about' : $bp . 'about.php' ?>" class="header__link <?php echo (isset($current_page) && $current_page === 'about') ? 'header__link--active' : ''; ?>">About</a>
       <a href="<?= $isShopSite ? $siteUrl . '/faq' : $bp . 'faq.php' ?>" class="header__link <?php echo (isset($current_page) && $current_page === 'faq') ? 'header__link--active' : ''; ?>">FAQ</a>
       <a href="<?= $isShopSite ? $siteUrl . '/contact' : $bp . 'contact.php' ?>" class="header__link <?php echo (isset($current_page) && $current_page === 'contact') ? 'header__link--active' : ''; ?>">Contact</a>
