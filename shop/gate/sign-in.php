@@ -340,7 +340,7 @@ $page_title = 'Sign In';
         </div>
 
         <div class="gate-form__forgot">
-          <a href="<?= SHOP_URL ?>/account/forgot-password.php">Forgot password?</a>
+          <a href="<?= SHOP_URL ?>/account/forgot-password">Forgot password?</a>
         </div>
 
         <button type="submit" class="gate-form__submit" id="login-submit">Sign In</button>

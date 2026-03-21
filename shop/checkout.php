@@ -14,7 +14,7 @@ access_guard();
 
 // Redirect if cart is empty
 if (cart_is_empty()) {
-    header('Location: ' . SHOP_URL . '/cart.php');
+    header('Location: ' . SHOP_URL . '/cart');
     exit;
 }
 
@@ -347,7 +347,7 @@ $subtotal = cart_subtotal();
               <div class="checkout-form__checkbox" style="display: flex; gap: 10px; margin: 20px 0;">
                 <input type="checkbox" id="agree-terms" required>
                 <label for="agree-terms" style="font-size: 13px; color: var(--gray-600); line-height: 1.5;">
-                  I agree to the <a href="<?= SITE_URL ?>/terms.php" style="color: var(--green);">Terms of Service</a>
+                  I agree to the <a href="<?= SITE_URL ?>/terms" style="color: var(--green);">Terms of Service</a>
                   and confirm that all products are for research use only.
                 </label>
               </div>

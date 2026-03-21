@@ -23,7 +23,15 @@
       "Bash(done)",
       "Bash(php -r \"list\\($w,$h\\) = getimagesize\\(''H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/images/products/bpc-157/images/bpc-157_10mg_mockup_nobackground.png''\\); echo $w.''x''.$h;\")",
       "Bash(\"/c/xampp/php/php.exe\" -r \"list\\($w,$h\\) = getimagesize\\(''H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/images/products/bpc-157/images/bpc-157_10mg_mockup_nobackground.png''\\); echo $w.''x''.$h;\")",
-      "mcp__Windows-MCP__PowerShell"
+      "mcp__Windows-MCP__PowerShell",
+      "Bash(gh auth:*)",
+      "Bash(mkdir \"H:\\\\Projects\\\\clarity-ops\\\\.claude\")",
+      "Bash(copy \"H:\\\\OneDrive\\\\OneDrive - Evo Tech\\\\Websites\\\\Clarity Labs USA\\\\Clarity Labs USA PHP Site\\\\.claude\\\\STOREFRONT-PLAN.md\" \"H:\\\\Projects\\\\clarity-ops\\\\.claude\\\\STOREFRONT-PLAN.md\")",
+      "Bash(mkdir -p \"H:/Projects/clarity-ops/.claude\")",
+      "Bash(cp \"H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/.claude/STOREFRONT-PLAN.md\" \"H:/Projects/clarity-ops/.claude/STOREFRONT-PLAN.md\")",
+      "Bash(cp \"C:/Users/johnn/.claude/plans/giggly-skipping-lantern.md\" \"H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/.claude/STOREFRONT-PLAN.md\")",
+      "Bash(cp \"C:/Users/johnn/.claude/plans/giggly-skipping-lantern.md\" \"H:/OneDrive/OneDrive - Evo Tech/Websites/Clarity Labs USA/Clarity Labs USA PHP Site/STOREFRONT-PLAN.md\")",
+      "Bash(cp \"C:/Users/johnn/.claude/plans/giggly-skipping-lantern.md\" \"H:/Projects/clarity-ops/.claude/STOREFRONT-PLAN.md\")"
     ]
   }
 }

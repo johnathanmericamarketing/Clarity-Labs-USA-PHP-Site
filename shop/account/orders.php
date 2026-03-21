@@ -53,7 +53,7 @@ $orders = $ordersResponse['data'] ?? [];
                     <?= ucfirst($order['status'] ?? 'pending') ?>
                   </span>
                   <strong style="color: var(--navy);">$<?= number_format($order['total_amount'] ?? 0, 2) ?></strong>
-                  <a href="<?= SHOP_URL ?>/account/order-detail.php?id=<?= $order['id'] ?? '' ?>" style="color: var(--green); font-weight: 500; font-size: 14px;">View Details →</a>
+                  <a href="<?= SHOP_URL ?>/account/order-detail?id=<?= $order['id'] ?? '' ?>" style="color: var(--green); font-weight: 500; font-size: 14px;">View Details →</a>
                 </div>
               </div>
             </div>

@@ -23,14 +23,14 @@ function access_guard(): void {
     // Gate 1: Age verification
     if (!is_age_verified()) {
         $currentUrl = urlencode($_SERVER['REQUEST_URI'] ?? '/');
-        header('Location: ' . SHOP_URL . '/gate/age-verify.php?redirect=' . $currentUrl);
+        header('Location: ' . SHOP_URL . '/gate/age-verify?redirect=' . $currentUrl);
         exit;
     }
 
     // Gate 2: Must be logged in
     if (!is_logged_in()) {
         $currentUrl = urlencode($_SERVER['REQUEST_URI'] ?? '/');
-        header('Location: ' . SHOP_URL . '/gate/sign-in.php?redirect=' . $currentUrl);
+        header('Location: ' . SHOP_URL . '/gate/sign-in?redirect=' . $currentUrl);
         exit;
     }
 }
@@ -43,7 +43,7 @@ function age_gate_only(): void {
 
     if (!is_age_verified()) {
         $currentUrl = urlencode($_SERVER['REQUEST_URI'] ?? '/');
-        header('Location: ' . SHOP_URL . '/gate/age-verify.php?redirect=' . $currentUrl);
+        header('Location: ' . SHOP_URL . '/gate/age-verify?redirect=' . $currentUrl);
         exit;
     }
 }

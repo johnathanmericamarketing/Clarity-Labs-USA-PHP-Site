@@ -21,7 +21,7 @@ if (is_age_verified()) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     set_age_verified();
     $redirect = $_POST['redirect'] ?? '/';
-    header('Location: ' . SHOP_URL . '/gate/sign-in.php?redirect=' . urlencode($redirect));
+    header('Location: ' . SHOP_URL . '/gate/sign-in?redirect=' . urlencode($redirect));
     exit;
 }
 

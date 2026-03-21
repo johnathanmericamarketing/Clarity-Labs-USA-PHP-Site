@@ -94,7 +94,7 @@ $page_title = 'Reset Password';
         <button type="submit" id="reset-btn">Send Reset Link</button>
       </form>
       <div style="margin-top: 20px;">
-        <a href="<?= SHOP_URL ?>/gate/sign-in.php">← Back to Sign In</a>
+        <a href="<?= SHOP_URL ?>/gate/sign-in">← Back to Sign In</a>
       </div>
     </div>
   </div>

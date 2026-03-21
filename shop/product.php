@@ -441,7 +441,7 @@ $relatedProducts = $product['related_products'] ?? [];
             <h2 style="font-size: 28px; margin-bottom: 24px;">Related Compounds</h2>
             <div class="products-grid" style="max-width: 900px;">
               <?php foreach (array_slice($relatedProducts, 0, 3) as $rp): ?>
-                <a href="<?= SHOP_URL ?>/product.php?sku=<?= urlencode($rp['sku'] ?? '') ?>" class="product-card">
+                <a href="<?= SHOP_URL ?>/product?sku=<?= urlencode($rp['sku'] ?? '') ?>" class="product-card">
                   <div class="product-card__body">
                     <span class="product-card__cat"><?= htmlspecialchars($rp['category'] ?? '') ?></span>
                     <h4 class="product-card__name"><?= htmlspecialchars($rp['name'] ?? '') ?></h4>

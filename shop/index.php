@@ -105,7 +105,7 @@ if (empty($products) && !$productsResponse['success']) {
                 $shortDesc = htmlspecialchars($product['short_description'] ?? '');
                 $slug      = $product['slug'] ?? strtolower(str_replace(' ', '-', $product['name'] ?? ''));
               ?>
-              <a href="<?= SHOP_URL ?>/product.php?sku=<?= urlencode($sku) ?>" class="product-card fade-up">
+              <a href="<?= SHOP_URL ?>/product?sku=<?= urlencode($sku) ?>" class="product-card fade-up">
                 <div class="product-card__img">
                   <?php if ($image): ?>
                     <img src="<?= htmlspecialchars($image) ?>" alt="<?= $name ?>" loading="lazy">
@@ -139,7 +139,7 @@ if (empty($products) && !$productsResponse['success']) {
           <p style="color: var(--gray-600); max-width: 500px; margin: 0 auto 20px;">
             We offer a curated selection, but our supplier network extends much further. Tell us what you need and we'll see if we can source it.
           </p>
-          <a href="<?= SHOP_URL ?>/support/index.php?type=product_request" class="btn btn--outline" style="display: inline-block; padding: 12px 28px; border: 2px solid var(--green); border-radius: 50px; color: var(--green); font-weight: 600; font-size: 14px; transition: all 0.2s;">
+          <a href="<?= SHOP_URL ?>/support?type=product_request" class="btn btn--outline" style="display: inline-block; padding: 12px 28px; border: 2px solid var(--green); border-radius: 50px; color: var(--green); font-weight: 600; font-size: 14px; transition: all 0.2s;">
             Request a Product &rarr;
           </a>
         </div>

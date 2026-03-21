@@ -142,8 +142,8 @@ $orders = $ordersResponse['data'] ?? [];
           <!-- Sidebar -->
           <nav class="account-nav">
             <a href="<?= SHOP_URL ?>/account/" class="active">Dashboard</a>
-            <a href="<?= SHOP_URL ?>/account/orders.php">Order History</a>
-            <a href="<?= SHOP_URL ?>/account/addresses.php">Addresses</a>
+            <a href="<?= SHOP_URL ?>/account/orders">Order History</a>
+            <a href="<?= SHOP_URL ?>/account/addresses">Addresses</a>
             <a href="<?= SHOP_URL ?>/support/">Support</a>
             <div class="account-nav__logout">
               <a href="#" onclick="logout(); return false;">Sign Out</a>
@@ -198,13 +198,13 @@ $orders = $ordersResponse['data'] ?? [];
                           </span>
                         </td>
                         <td>$<?= number_format($order['total_amount'] ?? 0, 2) ?></td>
-                        <td><a href="<?= SHOP_URL ?>/account/order-detail.php?id=<?= $order['id'] ?? '' ?>">View</a></td>
+                        <td><a href="<?= SHOP_URL ?>/account/order-detail?id=<?= $order['id'] ?? '' ?>">View</a></td>
                       </tr>
                     <?php endforeach; ?>
                   </tbody>
                 </table>
                 <div style="margin-top: 16px;">
-                  <a href="<?= SHOP_URL ?>/account/orders.php" style="color: var(--green); font-size: 14px; font-weight: 500;">View all orders →</a>
+                  <a href="<?= SHOP_URL ?>/account/orders" style="color: var(--green); font-size: 14px; font-weight: 500;">View all orders →</a>
                 </div>
               <?php endif; ?>
             </div>
@@ -219,7 +219,7 @@ $orders = $ordersResponse['data'] ?? [];
   <script>
   async function logout() {
     await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=logout');
-    window.location.href = '<?= SHOP_URL ?>/gate/sign-in.php';
+    window.location.href = '<?= SHOP_URL ?>/gate/sign-in';
   }
   </script>
 </body>

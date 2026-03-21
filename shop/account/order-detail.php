@@ -13,7 +13,7 @@ access_guard();
 
 $orderId = (int) ($_GET['id'] ?? 0);
 if (!$orderId) {
-    header('Location: ' . SHOP_URL . '/account/orders.php');
+    header('Location: ' . SHOP_URL . '/account/orders');
     exit;
 }
 
@@ -21,7 +21,7 @@ $api = new ClarityApiClient();
 $response = $api->getOrder($orderId, get_customer_token());
 
 if (!$response['success'] || empty($response['data'])) {
-    header('Location: ' . SHOP_URL . '/account/orders.php');
+    header('Location: ' . SHOP_URL . '/account/orders');
     exit;
 }
 
@@ -42,7 +42,7 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
   <main>
     <section style="padding: 60px 0 100px; min-height: 60vh;">
       <div class="container" style="max-width: 800px;">
-        <a href="<?= SHOP_URL ?>/account/orders.php" style="color: var(--green); font-size: 14px; display: block; margin-bottom: 20px;">← Back to Orders</a>
+        <a href="<?= SHOP_URL ?>/account/orders" style="color: var(--green); font-size: 14px; display: block; margin-bottom: 20px;">← Back to Orders</a>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
           <div>

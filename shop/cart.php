@@ -269,7 +269,7 @@ $itemCount = cart_count();
                 <span id="cart-total">$<?= number_format($subtotal, 2) ?></span>
               </div>
               <p class="cart-summary__note">Shipping and taxes calculated during checkout.</p>
-              <a href="<?= SHOP_URL ?>/checkout.php" class="cart-summary__checkout">Proceed to Checkout</a>
+              <a href="<?= SHOP_URL ?>/checkout" class="cart-summary__checkout">Proceed to Checkout</a>
               <a href="<?= SHOP_URL ?>/" class="cart-summary__continue">← Continue Shopping</a>
             </div>
           </div>
