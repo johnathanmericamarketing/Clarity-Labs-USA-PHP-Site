@@ -87,11 +87,15 @@ switch ($action) {
             exit;
         }
 
+        // Generate a temporary password (customer will be forced to change on first login)
+        $tempPassword = bin2hex(random_bytes(6)); // 12-char random string
+
         $api = new ClarityApiClient();
         $result = $api->register([
             'first_name'         => $firstName,
             'last_name'          => $lastName,
             'email'              => $email,
+            'password'           => $tempPassword,
             'birth_month'        => $birthMonth,
             'birth_year'         => $birthYear,
             'research_confirmed' => true,
