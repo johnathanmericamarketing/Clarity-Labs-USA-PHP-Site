@@ -380,14 +380,7 @@ $page_title = 'Sign In';
                 <option value="<?= $m ?>"><?= date('F', mktime(0, 0, 0, $m, 1)) ?></option>
               <?php endfor; ?>
             </select>
-            <select name="birth_year" id="reg-year" required>
-              <option value="">Year</option>
-              <?php
-              $currentYear = (int) date('Y');
-              for ($y = $currentYear - 18; $y >= $currentYear - 100; $y--): ?>
-                <option value="<?= $y ?>"><?= $y ?></option>
-              <?php endfor; ?>
-            </select>
+            <input type="number" name="birth_year" id="reg-year" class="gate-form__input" placeholder="1990" min="1920" max="<?= date('Y') - 21 ?>" required style="padding: 12px 16px;">
           </div>
         </div>
 
@@ -498,7 +491,7 @@ $page_title = 'Sign In';
         const data = await res.json();
 
         if (data.success) {
-          showMessage('success', data.message || 'Account created! Check your email for your temporary password, then sign in.');
+          showMessage('success', '<strong>Account Created!</strong><br><br>Here\'s what happens next:<br>1. Check your email for a <strong>temporary password</strong><br>2. Come back here and <strong>sign in</strong> with that password<br>3. You\'ll be asked to <strong>set a new password</strong> on your first login<br><br>Didn\'t get the email? Check your spam folder or <a href="' + '<?= SHOP_URL ?>' + '/support" style="color: #065F46; font-weight: 600;">contact support</a>.');
           showTab('login');
         } else {
           showMessage('error', data.error || 'Registration failed. Please try again.');

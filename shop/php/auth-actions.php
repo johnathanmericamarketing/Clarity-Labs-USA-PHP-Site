@@ -104,7 +104,7 @@ switch ($action) {
         if (!empty($result['success'])) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Account created! Check your email at ' . htmlspecialchars($email) . ' for your temporary password, then sign in.',
+                'message' => 'Account created! Check your email at ' . htmlspecialchars($email) . ' for your temporary password. Sign in with that password and you will be asked to set a new one.',
             ]);
         } else {
             echo json_encode([
