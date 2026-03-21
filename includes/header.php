@@ -22,13 +22,32 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
         $menu_groups[$cat][] = $mp;
     }
 } else {
-    if (!isset($products)) { include $bp . 'includes/product-data.php'; }
-    $menu_groups = [];
-    foreach ($products as $pslug => $p) {
-        if (!empty($p['hidden'])) continue;
-        $cat = $p['category'];
-        if (!isset($menu_groups[$cat])) $menu_groups[$cat] = [];
-        $menu_groups[$cat][$pslug] = $p;
+    // Main site — also load from API if config is available, otherwise static
+    $apiConfigFile = __DIR__ . '/../config/config.php';
+    if (file_exists($apiConfigFile) && !defined('CLARITY_API_KEY')) {
+        require_once $apiConfigFile;
+    }
+    if (defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '' && CLARITY_API_KEY !== 'your-api-key-here') {
+        require_once __DIR__ . '/api-client.php';
+        $menuApi = new ClarityApiClient();
+        $menuResponse = $menuApi->getProducts(['per_page' => 50]);
+        $apiMenuProducts = $menuResponse['data'] ?? [];
+        $menu_groups = [];
+        foreach ($apiMenuProducts as $mp) {
+            $cat = $mp['category'] ?? 'Other';
+            if (!isset($menu_groups[$cat])) $menu_groups[$cat] = [];
+            $menu_groups[$cat][] = $mp;
+        }
+        $isShopSite = true; // Use shop URLs for product links
+    } else {
+        if (!isset($products)) { include $bp . 'includes/product-data.php'; }
+        $menu_groups = [];
+        foreach ($products as $pslug => $p) {
+            if (!empty($p['hidden'])) continue;
+            $cat = $p['category'];
+            if (!isset($menu_groups[$cat])) $menu_groups[$cat] = [];
+            $menu_groups[$cat][$pslug] = $p;
+        }
     }
 }
 ?>
