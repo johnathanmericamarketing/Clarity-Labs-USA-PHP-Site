@@ -113,9 +113,9 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
         $stockStatus = $product['stock_status'] ?? 'Unknown';
         $primaryImage = $product['primary_image'] ?? '';
         $shortDesc = htmlspecialchars($product['short_description'] ?? '');
-        $sizeTags = array_map(function($s) { return $s['mg']; }, $product['sizes'] ?? []);
+        $sizes = $product['sizes'] ?? [];
       ?>
-      <div class="shop-card fade-up" data-category="<?= htmlspecialchars($catKey) ?>">
+      <div class="shop-card fade-up" data-category="<?= htmlspecialchars($catKey) ?>" data-base-price="<?= number_format($price, 2) ?>">
         <div class="shop-card__img">
           <?php if ($primaryImage): ?>
             <img src="<?= htmlspecialchars($primaryImage) ?>" alt="<?= $name ?>" loading="lazy">
@@ -126,7 +126,7 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
         <div class="shop-card__body">
           <span class="shop-card__cat"><?= htmlspecialchars($cat) ?></span>
           <h3 class="shop-card__name"><?= $name ?></h3>
-          <span class="shop-card__sizes"><?= implode(' · ', $sizeTags) ?></span>
+          <span class="shop-card__sizes"><?php foreach ($sizes as $s): ?><span class="shop-card__mg" data-price="<?= number_format($s['price'], 2) ?>" data-sku="<?= htmlspecialchars($s['sku']) ?>"><?= htmlspecialchars($s['mg']) ?></span><?php endforeach; ?></span>
           <p class="shop-card__desc"><?= $shortDesc ?></p>
         </div>
         <div class="shop-card__footer">
@@ -227,6 +227,31 @@ function filterCategory(category) {
     }
   });
 }
+
+// MG tag hover: update price and link to that variant's SKU
+document.querySelectorAll('.shop-card__mg').forEach(function(mg) {
+  mg.addEventListener('mouseenter', function() {
+    var card = mg.closest('.shop-card');
+    if (!card) return;
+    var price = mg.dataset.price;
+    var sku = mg.dataset.sku;
+    var priceEl = card.querySelector('.shop-card__price');
+    var linkEl = card.querySelector('.shop-card__btn');
+    if (priceEl && price) priceEl.textContent = '$' + price;
+    if (linkEl && sku) linkEl.href = '<?= SHOP_URL ?>/product?sku=' + encodeURIComponent(sku);
+    // Highlight active mg
+    card.querySelectorAll('.shop-card__mg').forEach(function(m) { m.classList.remove('active'); });
+    mg.classList.add('active');
+  });
+  mg.addEventListener('mouseleave', function() {
+    var card = mg.closest('.shop-card');
+    if (!card) return;
+    var basePrice = card.dataset.basePrice;
+    var priceEl = card.querySelector('.shop-card__price');
+    if (priceEl && basePrice) priceEl.textContent = 'From $' + basePrice;
+    card.querySelectorAll('.shop-card__mg').forEach(function(m) { m.classList.remove('active'); });
+  });
+});
 </script>
 
 </body>

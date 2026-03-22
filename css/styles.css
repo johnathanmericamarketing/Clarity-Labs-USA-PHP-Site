@@ -1597,13 +1597,33 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   line-height: 1.15;
 }
 .shop-card__sizes {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.shop-card__mg {
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: .5px;
+  color: var(--gray-400);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.shop-card__mg:first-child {
   color: var(--green);
-  margin-top: 4px;
+  border-color: var(--green-bdr);
+  background: var(--green-bg);
+}
+.shop-card__mg:hover,
+.shop-card__mg.active {
+  color: var(--green);
+  border-color: var(--green-bdr);
+  background: var(--green-bg);
 }
 .shop-card__desc {
   font-size: 13px;
