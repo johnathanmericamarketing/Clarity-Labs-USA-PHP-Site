@@ -17,10 +17,14 @@ function group_products_by_compound(array $products): array {
     $grouped = [];
 
     foreach ($products as $p) {
-        $compound = $p['compound'] ?? $p['name'] ?? '';
+        // Use compound field for grouping; fall back to name
+        $compound = trim($p['compound'] ?? '');
+        if (empty($compound)) {
+            $compound = trim($p['name'] ?? '');
+        }
         if (empty($compound)) continue;
 
-        $key = strtolower(trim($compound));
+        $key = strtolower(preg_replace('/\s+/', ' ', $compound));
 
         if (!isset($grouped[$key])) {
             $grouped[$key] = [
