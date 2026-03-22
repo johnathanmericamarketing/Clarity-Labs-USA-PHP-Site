@@ -78,6 +78,12 @@ if (!empty($_footerRawProducts) && function_exists('group_products_by_compound')
         <?php endforeach; ?>
       </div>
       <div class="footer__col">
+        <h4 class="footer__heading">Account</h4>
+        <a href="<?= $footerShopUrl ?>/account/">My Account</a>
+        <a href="<?= $footerShopUrl ?>/account/orders">Order History</a>
+        <a href="<?= $footerShopUrl ?>/cart">Shopping Cart</a>
+      </div>
+      <div class="footer__col">
         <h4 class="footer__heading">Quality</h4>
         <a href="<?= $footerSiteUrl ?>/#testing">Lab Testing</a>
         <a href="<?= $footerShopUrl ?>/">All Compounds</a>
