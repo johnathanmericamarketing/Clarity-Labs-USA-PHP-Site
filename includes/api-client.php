@@ -47,6 +47,14 @@ class ClarityApiClient {
     }
 
     /**
+     * Make a PUT request
+     */
+    public function put(string $endpoint, array $data = [], ?string $bearerToken = null): array {
+        $url = $this->baseUrl . $endpoint;
+        return $this->request('PUT', $url, $data, $bearerToken);
+    }
+
+    /**
      * Core cURL request handler
      */
     private function request(string $method, string $url, ?array $data = null, ?string $bearerToken = null): array {
@@ -75,6 +83,11 @@ class ClarityApiClient {
 
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
+            if ($data !== null) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            }
+        } elseif ($method === 'PUT' || $method === 'DELETE') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
             if ($data !== null) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             }
@@ -296,5 +309,41 @@ class ClarityApiClient {
             'code'  => $code,
             'items' => $cartItems,
         ]);
+    }
+
+    /* ──────────────────────────────────────────
+       Profile Endpoints
+       ────────────────────────────────────────── */
+
+    /**
+     * Update customer profile/address
+     */
+    public function updateProfile(array $data, string $bearerToken): array {
+        return $this->put('/auth/profile', $data, $bearerToken);
+    }
+
+    /* ──────────────────────────────────────────
+       Wishlist Endpoints
+       ────────────────────────────────────────── */
+
+    /**
+     * Get customer wishlist
+     */
+    public function getWishlist(string $bearerToken): array {
+        return $this->get('/wishlist', [], $bearerToken);
+    }
+
+    /**
+     * Add product to wishlist
+     */
+    public function addToWishlist(string $sku, string $bearerToken): array {
+        return $this->post('/wishlist', ['sku' => $sku], $bearerToken);
+    }
+
+    /**
+     * Remove product from wishlist
+     */
+    public function removeFromWishlist(string $sku, string $bearerToken): array {
+        return $this->request('DELETE', $this->baseUrl . '/wishlist/' . urlencode($sku), null, $bearerToken);
     }
 }

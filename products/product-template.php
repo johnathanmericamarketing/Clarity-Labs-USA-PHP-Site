@@ -158,6 +158,10 @@
 
       <!-- CTA Buttons -->
       <button type="button" class="btn btn--navy btn--block" id="add-to-cart-btn">Add to Cart</button>
+      <button type="button" class="btn btn--outline-navy btn--block" id="save-product-btn" style="margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg id="save-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span id="save-label">Save for Later</span>
+      </button>
 
       <!-- Trust Row -->
       <div class="product-trust">
@@ -727,6 +731,61 @@
           addBtn.textContent = 'Error';
           setTimeout(function() { addBtn.textContent = 'Add to Cart'; addBtn.disabled = false; }, 2000);
         });
+    });
+  }
+  // ── Save for Later (Wishlist) button ──
+  var saveBtn = document.getElementById('save-product-btn');
+  var saveIcon = document.getElementById('save-icon');
+  var saveLabel = document.getElementById('save-label');
+  var isSaved = false;
+
+  // Check if product is already saved
+  var initialSku = skuInput ? skuInput.value : '';
+  if (initialSku && saveBtn) {
+    fetch('<?php echo defined("SHOP_URL") ? SHOP_URL : ""; ?>/php/wishlist-actions.php?action=check&sku=' + encodeURIComponent(initialSku), { credentials: 'include' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.saved) {
+          isSaved = true;
+          saveIcon.setAttribute('fill', 'currentColor');
+          saveLabel.textContent = 'Saved';
+          saveBtn.classList.remove('btn--outline-navy');
+          saveBtn.classList.add('btn--green');
+        }
+      })
+      .catch(function() {});
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', function() {
+      var sku = skuInput ? skuInput.value : '';
+      if (!sku) return;
+      var action = isSaved ? 'remove' : 'add';
+      saveBtn.disabled = true;
+
+      fetch('<?php echo defined("SHOP_URL") ? SHOP_URL : ""; ?>/php/wishlist-actions.php?action=' + action + '&sku=' + encodeURIComponent(sku), {
+        method: 'POST',
+        credentials: 'include'
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          isSaved = !isSaved;
+          if (isSaved) {
+            saveIcon.setAttribute('fill', 'currentColor');
+            saveLabel.textContent = 'Saved';
+            saveBtn.classList.remove('btn--outline-navy');
+            saveBtn.classList.add('btn--green');
+          } else {
+            saveIcon.setAttribute('fill', 'none');
+            saveLabel.textContent = 'Save for Later';
+            saveBtn.classList.remove('btn--green');
+            saveBtn.classList.add('btn--outline-navy');
+          }
+        }
+        saveBtn.disabled = false;
+      })
+      .catch(function() { saveBtn.disabled = false; });
     });
   }
 })();
