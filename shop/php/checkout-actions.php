@@ -115,20 +115,24 @@ switch ($action) {
             exit;
         }
 
-        // Build order data
+        // Build order data — map to API expected format
         $orderData = [
-            'items'                  => cart_items_for_api(),
-            'shipping_name'          => $input['shipping_name'] ?? '',
-            'shipping_address_line1' => $input['shipping_address_line1'] ?? '',
-            'shipping_address_line2' => $input['shipping_address_line2'] ?? '',
-            'shipping_city'          => $input['shipping_city'] ?? '',
-            'shipping_state'         => $input['shipping_state'] ?? '',
-            'shipping_zip'           => $input['shipping_zip'] ?? '',
-            'shipping_country'       => $input['shipping_country'] ?? 'US',
-            'shipping_phone'         => $input['shipping_phone'] ?? '',
-            'payment_method'         => $input['payment_method'] ?? 'pending',
-            'payment_reference'      => $input['payment_reference'] ?? 'pending',
-            'affiliate_code'         => $_SESSION['affiliate_code'] ?? null,
+            'customer_email'   => $_SESSION['customer']['email'] ?? '',
+            'items'            => cart_items_for_api(),
+            'shipping_address' => [
+                'name'    => $input['shipping_name'] ?? '',
+                'line1'   => $input['shipping_address_line1'] ?? '',
+                'line2'   => $input['shipping_address_line2'] ?? '',
+                'city'    => $input['shipping_city'] ?? '',
+                'state'   => $input['shipping_state'] ?? '',
+                'zip'     => $input['shipping_zip'] ?? '',
+                'country' => $input['shipping_country'] ?? 'US',
+                'phone'   => $input['shipping_phone'] ?? '',
+            ],
+            'shipping_amount'  => (float) ($input['shipping_amount'] ?? 0),
+            'payment_method'   => $input['payment_method'] ?? 'pending',
+            'payment_reference' => $input['payment_reference'] ?? 'awaiting_invoice',
+            'affiliate_code'   => $_SESSION['affiliate_code'] ?? null,
         ];
 
         $result = $api->createOrder($orderData, get_customer_token());

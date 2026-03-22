@@ -57,6 +57,57 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
           </span>
         </div>
 
+        <!-- Payment Status Banner -->
+        <?php if (($order['payment_status'] ?? '') === 'awaiting'): ?>
+          <div style="background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="font-size: 16px; color: #92400e; margin-bottom: 4px;">⏳ Payment Required</h3>
+                <p style="font-size: 13px; color: #78350f; margin: 0;">
+                  Your order is awaiting payment. Please submit payment using one of the methods below.
+                </p>
+              </div>
+              <?php if (!empty($order['invoice_url'])): ?>
+                <a href="<?= htmlspecialchars($order['invoice_url']) ?>" target="_blank"
+                   style="display: inline-block; padding: 10px 20px; background: #f59e0b; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; white-space: nowrap;">
+                  📄 View Invoice
+                </a>
+              <?php endif; ?>
+            </div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #fbbf24;">
+              <h4 style="font-size: 13px; color: #92400e; margin-bottom: 8px;">Payment Options:</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; color: #78350f;">
+                <div><strong>Zelle:</strong> Check invoice for details</div>
+                <div><strong>Venmo:</strong> Check invoice for details</div>
+                <div><strong>ACH Transfer:</strong> Check invoice for details</div>
+                <div><strong>Check:</strong> Check invoice for details</div>
+              </div>
+              <p style="font-size: 12px; color: #92400e; margin-top: 8px; margin-bottom: 0;">
+                Include order number <strong><?= htmlspecialchars($order['order_number'] ?? '') ?></strong> with your payment.
+              </p>
+            </div>
+          </div>
+        <?php elseif (($order['payment_status'] ?? '') === 'paid'): ?>
+          <div style="background: linear-gradient(135deg, #d1fae5, #ecfdf5); border: 1px solid #10b981; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="font-size: 16px; color: #065f46; margin-bottom: 2px;">✓ Payment Received</h3>
+                <p style="font-size: 13px; color: #047857; margin: 0;">
+                  Payment confirmed via <?= ucfirst(htmlspecialchars($order['payment_method'] ?? 'payment')) ?>.
+                  <?php if (($order['status'] ?? '') === 'paid'): ?>Your order is being prepared.<?php endif; ?>
+                </p>
+              </div>
+              <?php if (!empty($order['invoice_url'])): ?>
+                <a href="<?= htmlspecialchars($order['invoice_url']) ?>" target="_blank"
+                   style="color: #065f46; font-size: 13px; font-weight: 500; text-decoration: none;">
+                  📄 Invoice
+                </a>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
         <!-- Items -->
         <div style="background: var(--gray-50); border: 1px solid var(--rule); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
           <h3 style="font-size: 16px; margin-bottom: 16px;">Items</h3>

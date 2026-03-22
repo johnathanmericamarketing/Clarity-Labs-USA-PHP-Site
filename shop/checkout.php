@@ -1,7 +1,8 @@
 <?php
 /* ============================================================
    ClarityLabsUSA — Checkout
-   Multi-step: Shipping → Payment → Confirmation
+   Multi-step: Shipping → Review → Confirmation
+   Invoice-based payment (Zelle/Venmo/ACH/Check)
    ============================================================ */
 
 $base_path = '../';
@@ -28,7 +29,6 @@ $subtotal = cart_subtotal();
 <head>
   <?php include __DIR__ . '/../includes/head.php'; ?>
   <?= csrf_meta() ?>
-  <script src="https://js.stripe.com/v3/"></script>
   <style>
     .checkout { padding: 40px 0 100px; min-height: 70vh; }
 
@@ -139,20 +139,29 @@ $subtotal = cart_subtotal();
 
     .shipping-rate__info input { accent-color: var(--green); }
     .shipping-rate__price { font-weight: 600; color: var(--navy); }
+    .shipping-rate__price.free { color: var(--green); }
     .shipping-rate__est { font-size: 12px; color: var(--gray-400); }
 
-    /* Stripe Element */
-    #card-element {
-      padding: 14px 16px;
-      border: 1px solid var(--gray-200);
-      border-radius: 8px;
-      background: var(--white);
+    /* Payment Info Box */
+    .payment-info-box {
+      background: linear-gradient(135deg, #f0fdfa, #ecfdf5);
+      border: 1px solid #99f6e4;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
     }
 
-    #card-errors {
-      color: #DC2626;
+    .payment-info-box h4 {
+      color: var(--green);
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .payment-info-box p {
       font-size: 13px;
-      margin-top: 8px;
+      color: var(--gray-600);
+      line-height: 1.6;
+      margin-bottom: 8px;
     }
 
     /* Buttons */
@@ -247,6 +256,17 @@ $subtotal = cart_subtotal();
       border: 1px solid #FECACA;
     }
 
+    .free-shipping-banner {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
     @media (max-width: 768px) {
       .checkout__layout { grid-template-columns: 1fr; }
       .checkout-form__row, .checkout-form__row--3 { grid-template-columns: 1fr; }
@@ -264,8 +284,8 @@ $subtotal = cart_subtotal();
         <!-- Steps -->
         <div class="checkout-steps">
           <div class="checkout-step active" data-step="1">1. Shipping</div>
-          <div class="checkout-step" data-step="2">2. Payment</div>
-          <div class="checkout-step" data-step="3">3. Confirmation</div>
+          <div class="checkout-step" data-step="2">2. Review & Confirm</div>
+          <div class="checkout-step" data-step="3">3. Order Placed</div>
         </div>
 
         <div id="checkout-error"></div>
@@ -321,34 +341,51 @@ $subtotal = cart_subtotal();
                          value="<?= htmlspecialchars($customer['phone'] ?? '') ?>" placeholder="(555) 123-4567">
                 </div>
 
-                <!-- Shipping Rates will load here -->
+                <!-- Shipping Rates -->
                 <div id="shipping-rates-container" style="display: none;">
                   <h3 style="font-size: 18px; margin: 24px 0 12px;">Shipping Method</h3>
                   <div id="shipping-rates"></div>
                 </div>
 
                 <div style="margin-top: 24px;">
-                  <button type="button" class="checkout-btn" id="btn-to-payment" onclick="getShippingRates()">
-                    Continue to Payment
+                  <button type="button" class="checkout-btn" id="btn-to-review" onclick="getShippingRates()">
+                    Continue to Review
                   </button>
                 </div>
               </form>
             </div>
 
-            <!-- Step 2: Payment -->
+            <!-- Step 2: Review & Confirm -->
             <div class="checkout-panel" id="panel-2">
-              <h2>Payment</h2>
-              <div class="checkout-form__group">
-                <label class="checkout-form__label">Card Details</label>
-                <div id="card-element"></div>
-                <div id="card-errors"></div>
+              <h2>Review Your Order</h2>
+
+              <!-- Shipping Summary -->
+              <div style="background: var(--gray-50); border-radius: 10px; padding: 16px; margin-bottom: 20px; border: 1px solid var(--rule);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <strong style="font-size: 14px;">Ship To</strong>
+                  <button type="button" class="checkout-back" onclick="goToStep(1)" style="margin: 0;">Edit</button>
+                </div>
+                <div id="review-shipping-address" style="font-size: 13px; color: var(--gray-600); line-height: 1.6;"></div>
+              </div>
+
+              <!-- Payment Info -->
+              <div class="payment-info-box">
+                <h4>💳 How Payment Works</h4>
+                <p>After placing your order, you'll receive an <strong>invoice by email</strong> with payment instructions. We accept:</p>
+                <p>
+                  <strong>Zelle</strong> · <strong>Venmo</strong> · <strong>ACH Bank Transfer</strong> · <strong>Check</strong>
+                </p>
+                <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 0;">
+                  Your order will be processed and shipped once payment is confirmed. Payment details are included in the invoice.
+                </p>
               </div>
 
               <div class="checkout-form__checkbox" style="display: flex; gap: 10px; margin: 20px 0;">
                 <input type="checkbox" id="agree-terms" required>
                 <label for="agree-terms" style="font-size: 13px; color: var(--gray-600); line-height: 1.5;">
-                  I agree to the <a href="<?= SITE_URL ?>/terms" style="color: var(--green);">Terms of Service</a>
-                  and confirm that all products are for research use only.
+                  I agree to the <a href="<?= SITE_URL ?>/terms" style="color: var(--green);">Terms of Service</a>,
+                  <a href="<?= SITE_URL ?>/refund" style="color: var(--green);">Refund Policy</a>,
+                  and confirm that all products are for <strong>research use only</strong>.
                 </label>
               </div>
 
@@ -360,18 +397,30 @@ $subtotal = cart_subtotal();
               </div>
             </div>
 
-            <!-- Step 3: Confirmation -->
+            <!-- Step 3: Order Placed -->
             <div class="checkout-panel" id="panel-3">
               <div style="text-align: center; padding: 40px 0;">
-                <div style="font-size: 64px; margin-bottom: 16px;">&#10003;</div>
-                <h2 style="color: var(--green); margin-bottom: 8px;">Order Confirmed!</h2>
+                <div style="font-size: 64px; margin-bottom: 16px;">✓</div>
+                <h2 style="color: var(--green); margin-bottom: 8px;">Order Placed!</h2>
                 <p style="color: var(--gray-600); margin-bottom: 4px;">
-                  Your order <strong id="order-number"></strong> has been placed.
+                  Your order <strong id="order-number"></strong> has been received.
                 </p>
-                <p style="color: var(--gray-600); margin-bottom: 32px;">
-                  A confirmation email has been sent to <strong id="order-email"></strong>.
+                <p style="color: var(--gray-600); margin-bottom: 24px;">
+                  An invoice with payment instructions has been sent to <strong id="order-email"></strong>.
                 </p>
-                <a href="<?= SHOP_URL ?>/" class="checkout-btn" style="text-decoration: none;">Continue Shopping</a>
+
+                <div style="background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 20px; text-align: left; max-width: 440px; margin: 0 auto 32px;">
+                  <h4 style="color: var(--green); font-size: 14px; margin-bottom: 10px;">What's Next?</h4>
+                  <ol style="font-size: 13px; color: var(--gray-600); line-height: 2; padding-left: 20px; margin: 0;">
+                    <li>Check your email for the invoice with payment details</li>
+                    <li>Submit payment via Zelle, Venmo, ACH, or Check</li>
+                    <li>We'll confirm payment and ship your order</li>
+                    <li>You'll receive tracking info by email</li>
+                  </ol>
+                </div>
+
+                <a href="<?= SHOP_URL ?>/account/orders" class="checkout-btn" style="text-decoration: none; margin-right: 8px;">View My Orders</a>
+                <a href="<?= SHOP_URL ?>/" class="checkout-btn" style="text-decoration: none; background: var(--navy);">Continue Shopping</a>
               </div>
             </div>
           </div>
@@ -379,6 +428,9 @@ $subtotal = cart_subtotal();
           <!-- Order Summary Sidebar -->
           <div class="checkout-summary" id="order-summary">
             <h3>Order Summary</h3>
+
+            <div class="free-shipping-banner">✓ Free Standard Shipping</div>
+
             <?php foreach ($items as $item): ?>
               <div class="checkout-summary__item">
                 <div>
@@ -395,11 +447,11 @@ $subtotal = cart_subtotal();
               </div>
               <div class="checkout-summary__row">
                 <span>Shipping</span>
-                <span id="summary-shipping">—</span>
+                <span id="summary-shipping" style="color: var(--green); font-weight: 600;">FREE</span>
               </div>
-              <div class="checkout-summary__row">
-                <span>Tax</span>
-                <span id="summary-tax">—</span>
+              <div class="checkout-summary__row" id="summary-shipping-upgrade-row" style="display: none;">
+                <span>Upgrade</span>
+                <span id="summary-shipping-upgrade">—</span>
               </div>
             </div>
             <div class="checkout-summary__total">
@@ -416,28 +468,9 @@ $subtotal = cart_subtotal();
 
   <script>
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-  const stripeKey = <?= json_encode(STRIPE_PUBLISHABLE_KEY) ?>;
-  let stripe, cardElement;
   let selectedShippingRate = null;
   let shippingAmount = 0;
-  let taxAmount = 0;
   const subtotal = <?= $subtotal ?>;
-
-  // Initialize Stripe
-  if (stripeKey) {
-    stripe = Stripe(stripeKey);
-    const elements = stripe.elements();
-    cardElement = elements.create('card', {
-      style: {
-        base: {
-          fontSize: '16px',
-          color: '#0B1E3F',
-          fontFamily: 'Inter, sans-serif',
-          '::placeholder': { color: '#9BA3B5' },
-        },
-      },
-    });
-  }
 
   function goToStep(step) {
     document.querySelectorAll('.checkout-panel').forEach(p => p.classList.remove('active'));
@@ -449,9 +482,15 @@ $subtotal = cart_subtotal();
     });
     document.getElementById('panel-' + step).classList.add('active');
 
-    // Mount Stripe on step 2
-    if (step === 2 && cardElement) {
-      setTimeout(() => cardElement.mount('#card-element'), 100);
+    // Populate review address on step 2
+    if (step === 2) {
+      const form = document.getElementById('shipping-form');
+      const fd = new FormData(form);
+      document.getElementById('review-shipping-address').innerHTML =
+        fd.get('shipping_first') + ' ' + fd.get('shipping_last') + '<br>' +
+        fd.get('shipping_address') + '<br>' +
+        (fd.get('shipping_address2') ? fd.get('shipping_address2') + '<br>' : '') +
+        fd.get('shipping_city') + ', ' + fd.get('shipping_state') + ' ' + fd.get('shipping_zip');
     }
   }
 
@@ -461,6 +500,28 @@ $subtotal = cart_subtotal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function updateTotal() {
+    const total = subtotal + shippingAmount;
+    document.getElementById('summary-total').textContent = '$' + total.toFixed(2);
+    document.getElementById('order-total-btn').textContent = total.toFixed(2);
+
+    if (shippingAmount > 0) {
+      document.getElementById('summary-shipping-upgrade-row').style.display = 'flex';
+      document.getElementById('summary-shipping-upgrade').textContent = '+$' + shippingAmount.toFixed(2);
+    } else {
+      document.getElementById('summary-shipping-upgrade-row').style.display = 'none';
+    }
+  }
+
+  function selectRate(el, price, rateId) {
+    document.querySelectorAll('.shipping-rate').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    el.querySelector('input[type="radio"]').checked = true;
+    selectedShippingRate = rateId;
+    shippingAmount = parseFloat(price);
+    updateTotal();
+  }
+
   async function getShippingRates() {
     const form = document.getElementById('shipping-form');
     if (!form.checkValidity()) {
@@ -468,16 +529,73 @@ $subtotal = cart_subtotal();
       return;
     }
 
-    const btn = document.getElementById('btn-to-payment');
+    const btn = document.getElementById('btn-to-review');
     btn.disabled = true;
-    btn.textContent = 'Getting rates...';
+    btn.textContent = 'Getting shipping rates...';
 
-    // For now, go directly to payment (shipping rates API endpoint needs to be built)
-    // TODO: Call /api/v1/shipping/rates with address + items
-    shippingAmount = 0;
-    goToStep(2);
+    const fd = new FormData(form);
+    fd.append('shipping_name', fd.get('shipping_first') + ' ' + fd.get('shipping_last'));
+    fd.append('_csrf_token', csrfToken);
+
+    try {
+      const res = await fetch('<?= SHOP_URL ?>/php/checkout-actions.php?action=shipping-rates', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+
+      if (data.status === 'ok' && data.tiers && data.tiers.length > 0) {
+        const container = document.getElementById('shipping-rates');
+        container.innerHTML = '';
+
+        data.tiers.forEach((tier, idx) => {
+          const isDefault = idx === 0;
+          const div = document.createElement('div');
+          div.className = 'shipping-rate' + (isDefault ? ' selected' : '');
+          div.onclick = function() { selectRate(this, tier.customer_price, tier.rate_id); };
+          div.innerHTML = `
+            <div class="shipping-rate__info">
+              <input type="radio" name="shipping_tier" value="${tier.rate_id}" ${isDefault ? 'checked' : ''}>
+              <div>
+                <div style="font-weight: 500;">${tier.label}</div>
+                <div class="shipping-rate__est">${tier.carrier}${tier.est_delivery_days ? ' · Est. ' + tier.est_delivery_days + ' days' : ''}</div>
+              </div>
+            </div>
+            <div class="shipping-rate__price ${tier.customer_price === 0 ? 'free' : ''}">${tier.display_price}</div>
+          `;
+          container.appendChild(div);
+
+          if (isDefault) {
+            selectedShippingRate = tier.rate_id;
+            shippingAmount = tier.customer_price;
+          }
+        });
+
+        document.getElementById('shipping-rates-container').style.display = 'block';
+        updateTotal();
+
+        // Change button to go to step 2
+        btn.textContent = 'Continue to Review';
+        btn.disabled = false;
+        btn.onclick = function() { goToStep(2); };
+      } else {
+        // No rates returned — default to free shipping and continue
+        shippingAmount = 0;
+        selectedShippingRate = 'free_standard';
+        updateTotal();
+        goToStep(2);
+      }
+    } catch (err) {
+      // If rate fetch fails, continue with free shipping
+      console.error('Shipping rate error:', err);
+      shippingAmount = 0;
+      selectedShippingRate = 'free_standard';
+      updateTotal();
+      goToStep(2);
+    }
+
     btn.disabled = false;
-    btn.textContent = 'Continue to Payment';
+    btn.textContent = 'Continue to Review';
   }
 
   async function placeOrder() {
@@ -489,11 +607,9 @@ $subtotal = cart_subtotal();
 
     const btn = document.getElementById('btn-place-order');
     btn.disabled = true;
-    btn.textContent = 'Processing...';
+    btn.textContent = 'Placing order...';
 
     try {
-      // TODO: Create Stripe PaymentIntent via API, confirm with cardElement
-      // For now, create order via API without payment
       const form = document.getElementById('shipping-form');
       const formData = new FormData(form);
 
@@ -507,6 +623,10 @@ $subtotal = cart_subtotal();
         shipping_zip: formData.get('shipping_zip'),
         shipping_country: 'US',
         shipping_phone: formData.get('shipping_phone'),
+        shipping_amount: shippingAmount,
+        payment_method: 'pending',
+        payment_reference: 'awaiting_invoice',
+        shipping_rate_id: selectedShippingRate,
       };
 
       const res = await fetch('<?= SHOP_URL ?>/php/checkout-actions.php?action=place-order', {
@@ -521,6 +641,8 @@ $subtotal = cart_subtotal();
         document.getElementById('order-number').textContent = data.order_number || '';
         document.getElementById('order-email').textContent = <?= json_encode($customer['email'] ?? '') ?>;
         goToStep(3);
+        // Hide sidebar on confirmation
+        document.getElementById('order-summary').style.display = 'none';
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
         btn.disabled = false;
