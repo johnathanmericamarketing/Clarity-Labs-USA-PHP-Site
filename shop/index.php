@@ -13,6 +13,7 @@ require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/access-guard.php';
 require_once __DIR__ . '/../includes/api-client.php';
+require_once __DIR__ . '/../includes/product-helpers.php';
 
 // Enforce both gates
 access_guard();
@@ -99,17 +100,20 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
 <!-- Product Grid -->
 <section class="shop-grid">
   <div class="shop-grid__inner">
-    <?php if (!$apiDown && !empty($apiProducts)): ?>
-      <?php foreach ($apiProducts as $product):
+    <?php if (!$apiDown && !empty($apiProducts)):
+      // Group variants by compound so each compound shows once
+      $groupedProducts = group_products_by_compound($apiProducts);
+    ?>
+      <?php foreach ($groupedProducts as $product):
         $name = htmlspecialchars($product['name'] ?? '');
         $sku = $product['sku'] ?? '';
         $cat = $product['category'] ?? '';
         $catKey = strtolower(str_replace(['&', ' '], ['-', '-'], strip_tags($cat)));
-        $price = $product['price_per_vial'] ?? $product['sale_price'] ?? $product['retail_price'] ?? 0;
+        $price = $product['min_price'] ?? 0;
         $stockStatus = $product['stock_status'] ?? 'Unknown';
         $primaryImage = $product['primary_image'] ?? '';
         $shortDesc = htmlspecialchars($product['short_description'] ?? '');
-        $slug = $product['slug'] ?? strtolower(str_replace(' ', '-', $product['name'] ?? ''));
+        $sizeTags = array_map(function($s) { return $s['mg']; }, $product['sizes'] ?? []);
       ?>
       <div class="shop-card fade-up" data-category="<?= htmlspecialchars($catKey) ?>">
         <div class="shop-card__img">
@@ -122,6 +126,9 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
         <div class="shop-card__body">
           <span class="shop-card__cat"><?= htmlspecialchars($cat) ?></span>
           <h3 class="shop-card__name"><?= $name ?></h3>
+          <?php if (count($sizeTags) > 1): ?>
+          <span class="shop-card__sizes"><?= implode(' · ', $sizeTags) ?></span>
+          <?php endif; ?>
           <p class="shop-card__desc"><?= $shortDesc ?></p>
         </div>
         <div class="shop-card__footer">

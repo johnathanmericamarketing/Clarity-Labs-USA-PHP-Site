@@ -14,6 +14,7 @@ require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/access-guard.php';
 require_once __DIR__ . '/../includes/api-client.php';
+require_once __DIR__ . '/../includes/product-helpers.php';
 
 access_guard();
 
@@ -37,7 +38,7 @@ $apiResponse = $api->getProduct($sku);
 $apiProduct = ($apiResponse['success'] ?? false) ? ($apiResponse['data'] ?? null) : null;
 
 if ($apiProduct) {
-    // Find matching local product by name or slug
+    // Find matching local product by name or compound slug
     $apiName = strtolower($apiProduct['name'] ?? '');
     $apiCompound = strtolower($apiProduct['compound'] ?? '');
 
@@ -52,23 +53,61 @@ if ($apiProduct) {
 
     // If no local match, try slug-style matching
     if (!$product) {
-        $slugFromApi = strtolower(str_replace([' ', '_'], '-', $apiProduct['name'] ?? ''));
+        $slugFromApi = strtolower(str_replace([' ', '_'], '-', $apiProduct['compound'] ?? $apiProduct['name'] ?? ''));
         if (isset($products[$slugFromApi])) {
             $slug = $slugFromApi;
             $product = $products[$slugFromApi];
         }
     }
 
-    // Merge API data into local product
-    if ($product) {
-        // Override pricing from API
-        if (!empty($apiProduct['sale_price'])) {
-            $product['starting_price'] = $apiProduct['sale_price'];
-            // Update sizes pricing if single size
-            if (!empty($product['sizes'])) {
-                $product['sizes'][0]['price'] = $apiProduct['sale_price'];
+    // ── Fetch ALL variants for this compound ──
+    $compoundName = $apiProduct['compound'] ?? '';
+    $allVariants = [];
+    if (!empty($compoundName)) {
+        $variantsResponse = $api->getProducts(['search' => $compoundName, 'per_page' => 50]);
+        $variantsList = $variantsResponse['data'] ?? [];
+        // Filter to exact compound match
+        foreach ($variantsList as $v) {
+            if (strtolower($v['compound'] ?? '') === strtolower($compoundName)) {
+                $allVariants[] = $v;
             }
         }
+    }
+    // Fallback: if variant fetch failed, use the single product
+    if (empty($allVariants)) {
+        $allVariants = [$apiProduct];
+    }
+
+    // Sort variants by mg value (numeric)
+    usort($allVariants, function ($a, $b) {
+        return (float) ($a['mg_specification'] ?? 0) - (float) ($b['mg_specification'] ?? 0);
+    });
+
+    // Build sizes array from all variants, each with its own SKU
+    $apiSizes = [];
+    $defaultSizeIndex = 0;
+    foreach ($allVariants as $vi => $variant) {
+        $apiSizes[] = [
+            'mg'           => $variant['mg_specification'] ?? '',
+            'phase'        => 'Standard Phase',
+            'price'        => (float) ($variant['sale_price'] ?? 0),
+            'sku'          => $variant['sku'] ?? '',
+            'stock_status' => $variant['stock_status'] ?? 'Unknown',
+            'popular'      => count($allVariants) > 1 && $vi === 1, // middle size = popular
+            'card_desc'    => $variant['short_description'] ?? '',
+        ];
+        // Default to the variant matching the requested SKU
+        if (($variant['sku'] ?? '') === $sku) {
+            $defaultSizeIndex = $vi;
+        }
+    }
+
+    // Merge API data into local product
+    if ($product) {
+        // Override sizes with API variants (each has its own SKU & price)
+        $product['sizes'] = $apiSizes;
+        $product['starting_price'] = $apiSizes[$defaultSizeIndex]['price'] ?? $apiSizes[0]['price'] ?? 0;
+        $product['default_size_index'] = $defaultSizeIndex;
         // Override images from API if available
         if (!empty($apiProduct['primary_image'])) {
             $product['api_primary_image'] = $apiProduct['primary_image'];
@@ -79,29 +118,26 @@ if ($apiProduct) {
         if (!empty($apiProduct['coa_pdf'])) {
             $product['api_coa_pdf'] = $apiProduct['coa_pdf'];
         }
-        // Stock status
+        // Stock status from requested variant
         $product['stock_status'] = $apiProduct['stock_status'] ?? 'Unknown';
+        // Use compound name as display name
+        if (!empty($compoundName)) {
+            $product['name'] = $compoundName;
+        }
     } else {
         // No local product — build minimal product array from API data
-        $slug = strtolower(str_replace([' ', '_'], '-', $apiProduct['name'] ?? 'product'));
+        $slug = strtolower(str_replace([' ', '_'], '-', $compoundName ?: ($apiProduct['name'] ?? 'product')));
         $product = [
-            'name' => $apiProduct['name'] ?? 'Product',
+            'name' => $compoundName ?: ($apiProduct['name'] ?? 'Product'),
             'category' => $apiProduct['category'] ?? '',
-            'badge' => strtoupper($apiProduct['compound'] ?? '') . ' · ' . strtoupper($apiProduct['mg_specification'] ?? ''),
-            'tagline' => strtoupper($apiProduct['compound'] ?? '') . ' RESEARCH COMPOUND',
+            'badge' => strtoupper($compoundName) . ' · RESEARCH COMPOUND',
+            'tagline' => strtoupper($compoundName) . ' RESEARCH COMPOUND',
             'short_desc' => $apiProduct['short_description'] ?? '',
             'research_profile' => $apiProduct['short_description'] ?? '',
-            'starting_price' => $apiProduct['sale_price'] ?? 0,
+            'starting_price' => $apiSizes[$defaultSizeIndex]['price'] ?? 0,
+            'default_size_index' => $defaultSizeIndex,
             'store_url' => '#',
-            'sizes' => [
-                [
-                    'mg' => $apiProduct['mg_specification'] ?? '',
-                    'phase' => 'Standard Phase',
-                    'price' => $apiProduct['sale_price'] ?? 0,
-                    'popular' => true,
-                    'card_desc' => $apiProduct['short_description'] ?? '',
-                ],
-            ],
+            'sizes' => $apiSizes,
             'why_cards' => [],
             'hero_checklist' => [
                 'Research grade — third-party COA verified',

@@ -312,6 +312,7 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
           if (!defined('CLARITY_API_KEY')) { require_once $apiConfigFile; }
           if (defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '' && CLARITY_API_KEY !== 'your-api-key-here') {
               require_once __DIR__ . '/includes/api-client.php';
+              require_once __DIR__ . '/includes/product-helpers.php';
               $homeApi = new ClarityApiClient();
               $homeResponse = $homeApi->getProducts(['per_page' => 50]);
               $homeApiProducts = $homeResponse['data'] ?? null;
@@ -319,12 +320,19 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
       }
 
       if (!empty($homeApiProducts)):
+        // Group variants by compound so each compound shows once
+        $groupedProducts = group_products_by_compound($homeApiProducts);
         $i = 0;
-        foreach ($homeApiProducts as $hp):
-          $stagger = ($i % 4) + 1; ?>
+        foreach ($groupedProducts as $hp):
+          $stagger = ($i % 4) + 1;
+          $sizeTags = array_map(function($s) { return $s['mg']; }, $hp['sizes']);
+        ?>
         <a href="https://shop.claritylabsusa.com/product?sku=<?php echo urlencode($hp['sku'] ?? ''); ?>" class="compound-card fade-up stagger-<?php echo $stagger; ?>">
           <span class="compound-card__cat"><?php echo htmlspecialchars($hp['category'] ?? ''); ?></span>
           <span class="compound-card__name"><?php echo htmlspecialchars($hp['name'] ?? ''); ?></span>
+          <?php if (count($sizeTags) > 1): ?>
+          <span class="compound-card__sizes"><?php echo implode(' · ', $sizeTags); ?></span>
+          <?php endif; ?>
           <span class="compound-card__desc"><?php echo htmlspecialchars($hp['short_description'] ?? ''); ?></span>
           <span class="compound-card__link">View Compound &rarr;</span>
         </a>

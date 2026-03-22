@@ -119,7 +119,8 @@
       <div class="product-badge">&#10003; Research Grade</div>
 
       <!-- Price -->
-      <div class="product-price" id="product-price">$<?php echo number_format($product['sizes'][0]['price'], 2); ?></div>
+      <?php $defaultIdx = $product['default_size_index'] ?? 0; ?>
+      <div class="product-price" id="product-price">$<?php echo number_format($product['sizes'][$defaultIdx]['price'], 2); ?></div>
 
       <!-- Short Description -->
       <p class="product-desc"><?php echo htmlspecialchars($product['short_desc']); ?></p>
@@ -127,13 +128,17 @@
       <hr class="product-divider">
 
       <!-- Size Selector -->
-      <div class="size-selector">
+      <div class="size-selector" id="size-selector">
         <span class="size-selector__label">Select Size</span>
         <?php foreach ($product['sizes'] as $i => $size): ?>
-        <div class="size-option <?php echo $i === 0 ? 'active' : ''; ?>" data-price="$<?php echo number_format($size['price'], 2); ?>">
+        <div class="size-option <?php echo $i === $defaultIdx ? 'active' : ''; ?>"
+             data-price="<?php echo number_format($size['price'], 2); ?>"
+             data-sku="<?php echo htmlspecialchars($size['sku'] ?? ''); ?>"
+             data-mg="<?php echo htmlspecialchars($size['mg'] ?? ''); ?>"
+             data-stock="<?php echo htmlspecialchars($size['stock_status'] ?? 'Unknown'); ?>">
           <div class="size-option__left">
             <span class="size-option__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
-            <span class="size-option__phase"><?php echo htmlspecialchars($size['phase']); ?></span>
+            <span class="size-option__phase"><?php echo htmlspecialchars($size['phase'] ?? ''); ?></span>
           </div>
           <?php if (!empty($size['popular'])): ?>
           <span class="size-option__popular">POPULAR</span>
@@ -144,9 +149,15 @@
 
       <hr class="product-divider">
 
+      <!-- Hidden fields for cart -->
+      <input type="hidden" id="selected-sku" value="<?php echo htmlspecialchars($product['sizes'][$defaultIdx]['sku'] ?? $sku ?? ''); ?>">
+      <input type="hidden" id="selected-price" value="<?php echo number_format($product['sizes'][$defaultIdx]['price'], 2); ?>">
+      <input type="hidden" id="selected-size" value="<?php echo htmlspecialchars($product['sizes'][$defaultIdx]['mg'] ?? ''); ?>">
+      <input type="hidden" id="product-name" value="<?php echo htmlspecialchars($product['name']); ?>">
+      <input type="hidden" id="product-image" value="<?php echo htmlspecialchars($product['api_primary_image'] ?? ''); ?>">
+
       <!-- CTA Buttons -->
-      <button type="button" class="btn btn--navy btn--block js-order-modal-open">Add to Cart</button>
-      <button type="button" class="btn btn--outline-navy btn--block js-order-modal-open">Order Now &rarr;</button>
+      <button type="button" class="btn btn--navy btn--block" id="add-to-cart-btn">Add to Cart</button>
 
       <!-- Trust Row -->
       <div class="product-trust">
@@ -330,7 +341,7 @@
         <span class="size-card__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
         <p class="size-card__desc"><?php echo htmlspecialchars($size['card_desc']); ?></p>
         <span class="size-card__note">$<?php echo number_format($size['price'], 2); ?></span>
-        <button type="button" class="btn <?php echo $featured ? 'btn--navy' : 'btn--outline-navy'; ?> btn--block js-order-modal-open" data-size="<?php echo htmlspecialchars($size['mg']); ?>">Select — <?php echo htmlspecialchars($size['mg']); ?></button>
+        <button type="button" class="btn <?php echo $featured ? 'btn--navy' : 'btn--outline-navy'; ?> btn--block js-order-modal-open" data-size="<?php echo htmlspecialchars($size['mg']); ?>" data-sku="<?php echo htmlspecialchars($size['sku'] ?? ''); ?>">Select — <?php echo htmlspecialchars($size['mg']); ?></button>
       </div>
       <?php endforeach; ?>
     </div>
@@ -433,8 +444,9 @@
       <form id="order-form" class="order-form">
         <input type="hidden" name="product" value="<?php echo htmlspecialchars($product['name']); ?>">
         <input type="hidden" name="product_slug" value="<?php echo htmlspecialchars($slug); ?>">
-        <input type="hidden" name="size" id="order-size-input" value="<?php echo htmlspecialchars($product['sizes'][0]['mg']); ?>">
-        <input type="hidden" name="price" id="order-price-input" value="<?php echo number_format($product['sizes'][0]['price'], 2); ?>">
+        <input type="hidden" name="size" id="order-size-input" value="<?php echo htmlspecialchars($product['sizes'][$defaultIdx]['mg']); ?>">
+        <input type="hidden" name="price" id="order-price-input" value="<?php echo number_format($product['sizes'][$defaultIdx]['price'], 2); ?>">
+        <input type="hidden" name="sku" id="order-sku-input" value="<?php echo htmlspecialchars($product['sizes'][$defaultIdx]['sku'] ?? ''); ?>">
         <div style="display:none;"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
 
         <!-- Error Message -->
@@ -484,8 +496,8 @@
               <label class="form-label">Select Size</label>
               <div class="order-size-options">
                 <?php foreach ($product['sizes'] as $i => $size): ?>
-                <label class="order-size-option <?php echo $i === 0 ? 'active' : ''; ?>">
-                  <input type="radio" name="selected_size" value="<?php echo htmlspecialchars($size['mg']); ?>" data-price="<?php echo number_format($size['price'], 2); ?>" <?php echo $i === 0 ? 'checked' : ''; ?>>
+                <label class="order-size-option <?php echo $i === $defaultIdx ? 'active' : ''; ?>">
+                  <input type="radio" name="selected_size" value="<?php echo htmlspecialchars($size['mg']); ?>" data-price="<?php echo number_format($size['price'], 2); ?>" data-sku="<?php echo htmlspecialchars($size['sku'] ?? ''); ?>" <?php echo $i === $defaultIdx ? 'checked' : ''; ?>>
                   <span class="order-size-option__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
                 </label>
                 <?php endforeach; ?>
@@ -585,6 +597,140 @@
 </div>
 
 <?php include $base_path . 'includes/footer.php'; ?>
+
+<script>
+(function() {
+  // ── Size selector: update price, SKU, and hidden fields on click ──
+  var sizeOptions = document.querySelectorAll('#size-selector .size-option');
+  var priceDisplay = document.getElementById('product-price');
+  var skuInput = document.getElementById('selected-sku');
+  var priceInput = document.getElementById('selected-price');
+  var sizeInput = document.getElementById('selected-size');
+  // Also update modal hidden fields if they exist
+  var orderSizeInput = document.getElementById('order-size-input');
+  var orderPriceInput = document.getElementById('order-price-input');
+  var orderSkuInput = document.getElementById('order-sku-input');
+
+  sizeOptions.forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      // Update active state
+      sizeOptions.forEach(function(o) { o.classList.remove('active'); });
+      opt.classList.add('active');
+
+      var price = opt.getAttribute('data-price');
+      var sku = opt.getAttribute('data-sku');
+      var mg = opt.getAttribute('data-mg');
+
+      // Update hero price display
+      if (priceDisplay) priceDisplay.textContent = '$' + price;
+      // Update hidden fields for cart
+      if (skuInput) skuInput.value = sku;
+      if (priceInput) priceInput.value = price;
+      if (sizeInput) sizeInput.value = mg;
+      // Update modal fields
+      if (orderSizeInput) orderSizeInput.value = mg;
+      if (orderPriceInput) orderPriceInput.value = price;
+      if (orderSkuInput) orderSkuInput.value = sku;
+
+      // Update modal price display
+      var orderPriceDisplay = document.getElementById('order-price-display');
+      if (orderPriceDisplay) orderPriceDisplay.textContent = '$' + price;
+
+      // Update modal radio to match
+      var radios = document.querySelectorAll('input[name="selected_size"]');
+      radios.forEach(function(r) {
+        var label = r.closest('.order-size-option');
+        if (r.value === mg) {
+          r.checked = true;
+          if (label) label.classList.add('active');
+        } else {
+          r.checked = false;
+          if (label) label.classList.remove('active');
+        }
+      });
+    });
+  });
+
+  // ── Modal radio size change → update price/SKU ──
+  var modalRadios = document.querySelectorAll('input[name="selected_size"]');
+  modalRadios.forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      var price = radio.getAttribute('data-price');
+      var sku = radio.getAttribute('data-sku');
+      var mg = radio.value;
+      // Update all displays
+      if (priceDisplay) priceDisplay.textContent = '$' + price;
+      if (skuInput) skuInput.value = sku;
+      if (priceInput) priceInput.value = price;
+      if (sizeInput) sizeInput.value = mg;
+      if (orderSizeInput) orderSizeInput.value = mg;
+      if (orderPriceInput) orderPriceInput.value = price;
+      if (orderSkuInput) orderSkuInput.value = sku;
+      var orderPriceDisplay = document.getElementById('order-price-display');
+      if (orderPriceDisplay) orderPriceDisplay.textContent = '$' + price;
+      // Update hero size selector
+      sizeOptions.forEach(function(o) {
+        o.classList.toggle('active', o.getAttribute('data-sku') === sku);
+      });
+      // Update radio labels
+      modalRadios.forEach(function(r) {
+        var label = r.closest('.order-size-option');
+        if (label) label.classList.toggle('active', r === radio);
+      });
+    });
+  });
+
+  // ── Add to Cart button ──
+  var addBtn = document.getElementById('add-to-cart-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', function() {
+      var sku = skuInput ? skuInput.value : '';
+      var name = document.getElementById('product-name') ? document.getElementById('product-name').value : '';
+      var size = sizeInput ? sizeInput.value : '';
+      var price = priceInput ? priceInput.value : '';
+      var imageUrl = document.getElementById('product-image') ? document.getElementById('product-image').value : '';
+
+      if (!sku || !name) return;
+
+      addBtn.disabled = true;
+      addBtn.textContent = 'Adding...';
+
+      var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+      var formData = new FormData();
+      formData.append('sku', sku);
+      formData.append('name', name);
+      formData.append('size', size);
+      formData.append('price', price);
+      formData.append('qty', '1');
+      formData.append('image_url', imageUrl);
+      formData.append('csrf_token', csrfToken);
+
+      var cartUrl = '<?php echo defined("SHOP_URL") ? SHOP_URL : ""; ?>/php/cart-actions.php?action=add';
+
+      fetch(cartUrl, { method: 'POST', body: formData, credentials: 'include' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            addBtn.textContent = 'Added!';
+            // Update cart badge if exists
+            var badge = document.querySelector('.cart-count');
+            if (badge) { badge.textContent = data.cart_count; badge.style.display = 'inline-flex'; }
+            setTimeout(function() { addBtn.textContent = 'Add to Cart'; addBtn.disabled = false; }, 1500);
+          } else {
+            addBtn.textContent = data.error || 'Error';
+            setTimeout(function() { addBtn.textContent = 'Add to Cart'; addBtn.disabled = false; }, 2000);
+          }
+        })
+        .catch(function() {
+          addBtn.textContent = 'Error';
+          setTimeout(function() { addBtn.textContent = 'Add to Cart'; addBtn.disabled = false; }, 2000);
+        });
+    });
+  }
+})();
+</script>
 
 </body>
 </html>
