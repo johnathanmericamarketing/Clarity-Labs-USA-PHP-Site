@@ -126,9 +126,7 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
         <div class="shop-card__body">
           <span class="shop-card__cat"><?= htmlspecialchars($cat) ?></span>
           <h3 class="shop-card__name"><?= $name ?></h3>
-          <?php if (count($sizeTags) > 1): ?>
           <span class="shop-card__sizes"><?= implode(' · ', $sizeTags) ?></span>
-          <?php endif; ?>
           <p class="shop-card__desc"><?= $shortDesc ?></p>
         </div>
         <div class="shop-card__footer">

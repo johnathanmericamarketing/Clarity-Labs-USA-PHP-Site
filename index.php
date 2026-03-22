@@ -330,9 +330,7 @@ $page_description = 'ClarityLabs USA provides high-purity research peptides with
         <a href="https://shop.claritylabsusa.com/product?sku=<?php echo urlencode($hp['sku'] ?? ''); ?>" class="compound-card fade-up stagger-<?php echo $stagger; ?>">
           <span class="compound-card__cat"><?php echo htmlspecialchars($hp['category'] ?? ''); ?></span>
           <span class="compound-card__name"><?php echo htmlspecialchars($hp['name'] ?? ''); ?></span>
-          <?php if (count($sizeTags) > 1): ?>
           <span class="compound-card__sizes"><?php echo implode(' · ', $sizeTags); ?></span>
-          <?php endif; ?>
           <span class="compound-card__desc"><?php echo htmlspecialchars($hp['short_description'] ?? ''); ?></span>
           <span class="compound-card__link">View Compound &rarr;</span>
         </a>
