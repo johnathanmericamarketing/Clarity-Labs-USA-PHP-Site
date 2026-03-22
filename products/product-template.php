@@ -16,9 +16,9 @@
 <!-- Breadcrumb -->
 <div class="breadcrumb">
   <div class="breadcrumb__inner">
-    <a href="<?php echo $base_path; ?>index.php">ClarityLabsUSA</a>
+    <a href="<?php echo defined('SITE_URL') ? SITE_URL : $base_path . 'index.php'; ?>">ClarityLabsUSA</a>
     <span class="breadcrumb__sep">/</span>
-    <a href="<?php echo $base_path; ?>shop.php">Shop</a>
+    <a href="<?php echo defined('SHOP_URL') ? SHOP_URL : $base_path . 'shop/'; ?>">Shop</a>
     <span class="breadcrumb__sep">/</span>
     <span class="breadcrumb__current"><?php echo htmlspecialchars($product['name']); ?></span>
   </div>
@@ -34,70 +34,121 @@
     <div class="product-hero__gallery fade-up">
       <div class="product-hero__main-img">
         <?php
+          // ── Build image sources: API first, then local filesystem fallback ──
           $heroImg = '';
-          $heroDir = $base_path . 'images/products/' . $slug . '/images/';
-          if (is_dir($heroDir)) {
-            $allFiles = scandir($heroDir);
-            // First: look for 800px image
-            foreach ($allFiles as $f) {
-              if (stripos($f, '800') !== false) { $heroImg = $heroDir . $f; break; }
-            }
-            // Fallback: first image that is not COA and not 220px
-            if (!$heroImg) {
-              foreach ($allFiles as $f) {
-                if ($f === '.' || $f === '..') continue;
-                if (stripos($f, 'COA') !== false || stripos($f, '220') !== false) continue;
-                if (preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) { $heroImg = $heroDir . $f; break; }
-              }
-            }
+          $galleryImages = [];
+          $coaPreview = '';
+          $coaPdf = '';
+
+          // 1. Check API images (from ops/R2)
+          $apiPrimary = $product['api_primary_image'] ?? '';
+          $apiGallery = $product['api_gallery_images'] ?? [];
+          $apiCoaPdf  = $product['api_coa_pdf'] ?? '';
+          $apiCoaPreview = $product['api_coa_preview'] ?? '';
+
+          if (!empty($apiPrimary)) {
+              $heroImg = $apiPrimary;
           }
+          if (!empty($apiGallery) && is_array($apiGallery)) {
+              $galleryImages = $apiGallery;
+          }
+          if (!empty($apiCoaPreview)) {
+              $coaPreview = $apiCoaPreview;
+          }
+          if (!empty($apiCoaPdf)) {
+              $coaPdf = $apiCoaPdf;
+          }
+
+          // 2. Fallback: local filesystem (legacy)
+          if (!$heroImg) {
+              $heroDir = $base_path . 'images/products/' . $slug . '/images/';
+              if (is_dir($heroDir)) {
+                  $allFiles = scandir($heroDir);
+                  foreach ($allFiles as $f) {
+                      if (stripos($f, '800') !== false) { $heroImg = $heroDir . $f; break; }
+                  }
+                  if (!$heroImg) {
+                      foreach ($allFiles as $f) {
+                          if ($f === '.' || $f === '..') continue;
+                          if (stripos($f, 'COA') !== false || stripos($f, '220') !== false) continue;
+                          if (preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) { $heroImg = $heroDir . $f; break; }
+                      }
+                  }
+              }
+          }
+
+          // Fallback COA PDF from local
+          if (!$coaPdf) {
+              $pdfDir = $base_path . 'images/products/' . $slug . '/pdf/';
+              if (is_dir($pdfDir)) {
+                  foreach (scandir($pdfDir) as $f) {
+                      if ($f === '.' || $f === '..') continue;
+                      if (preg_match('/\.pdf$/i', $f)) { $coaPdf = $pdfDir . $f; break; }
+                  }
+              }
+          }
+
           if ($heroImg):
         ?>
-          <img src="<?php echo $heroImg; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+          <img src="<?php echo htmlspecialchars($heroImg); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" id="hero-main-image">
         <?php else: ?>
           <span class="placeholder-text"><?php echo htmlspecialchars($product['name']); ?></span>
         <?php endif; ?>
       </div>
       <div class="product-hero__thumbs">
         <?php
-          // Thumb 1: small product image (220px preview, 800px on click)
-          $thumbProduct = '';
-          if (is_dir($heroDir)) {
-            foreach (scandir($heroDir) as $f) {
-              if (stripos($f, '220') !== false && preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) { $thumbProduct = $heroDir . $f; break; }
-            }
-          }
-          // Thumb 2: COA image
-          $thumbCoa = '';
-          if (is_dir($heroDir)) {
-            foreach (scandir($heroDir) as $f) {
-              if (stripos($f, 'COA') !== false && preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) { $thumbCoa = $heroDir . $f; break; }
-            }
-          }
-          // Find COA PDF for thumb 2 (scandir to avoid Windows glob issues with ../)
-          $thumbCoaPdf = '';
-          $pdfDir = $base_path . 'images/products/' . $slug . '/pdf/';
-          if (is_dir($pdfDir)) {
-            foreach (scandir($pdfDir) as $f) {
-              if ($f === '.' || $f === '..') continue;
-              if (preg_match('/\.pdf$/i', $f)) { $thumbCoaPdf = $pdfDir . $f; break; }
-            }
-          }
-          // Each thumb: 'preview' = thumbnail src, 'full' = what loads in hero on click, 'pdf' = optional PDF
+          // Build thumbnail array
           $thumbs = [];
-          if ($thumbProduct) { $thumbs[] = ['preview' => $thumbProduct, 'full' => $heroImg ? $heroImg : $thumbProduct, 'pdf' => '']; }
-          if ($thumbCoa) { $thumbs[] = ['preview' => $thumbCoa, 'full' => $thumbCoa, 'pdf' => $thumbCoaPdf]; }
+
+          // Thumb 1: Primary product image
+          if ($heroImg) {
+              $thumbs[] = ['preview' => $heroImg, 'full' => $heroImg, 'pdf' => ''];
+          }
+
+          // Additional gallery images from API
+          foreach ($galleryImages as $gImg) {
+              if (!empty($gImg) && $gImg !== $heroImg) {
+                  $thumbs[] = ['preview' => $gImg, 'full' => $gImg, 'pdf' => ''];
+              }
+          }
+
+          // COA preview image (clickable, links to COA PDF if available)
+          if ($coaPreview) {
+              $thumbs[] = ['preview' => $coaPreview, 'full' => $coaPreview, 'pdf' => $coaPdf];
+          } elseif (!$coaPreview && $coaPdf) {
+              // No COA preview image but have PDF — show a "COA" text thumb
+              // Skip — will show link below instead
+          }
+
+          // Fallback: local filesystem thumbnails if no API images
+          if (empty($thumbs)) {
+              $heroDir = $base_path . 'images/products/' . $slug . '/images/';
+              if (is_dir($heroDir)) {
+                  $thumbProduct = '';
+                  $thumbCoa = '';
+                  foreach (scandir($heroDir) as $f) {
+                      if (stripos($f, '220') !== false && preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) { $thumbProduct = $heroDir . $f; break; }
+                  }
+                  foreach (scandir($heroDir) as $f) {
+                      if (stripos($f, 'COA') !== false && preg_match('/\.(jpg|jpeg|png|webp)$/i', $f)) { $thumbCoa = $heroDir . $f; break; }
+                  }
+                  if ($thumbProduct) { $thumbs[] = ['preview' => $thumbProduct, 'full' => $heroImg ?: $thumbProduct, 'pdf' => '']; }
+                  if ($thumbCoa) { $thumbs[] = ['preview' => $thumbCoa, 'full' => $thumbCoa, 'pdf' => $coaPdf]; }
+              }
+          }
+
           $idx = 0;
           foreach ($thumbs as $t): $idx++;
         ?>
         <div class="product-hero__thumb <?php echo $idx === 1 ? 'active' : ''; ?>"
-             data-src="<?php echo $t['full']; ?>">
-          <img src="<?php echo $t['preview']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?> view <?php echo $idx; ?>">
+             data-src="<?php echo htmlspecialchars($t['full']); ?>"
+             <?php if (!empty($t['pdf'])): ?>data-pdf="<?php echo htmlspecialchars($t['pdf']); ?>"<?php endif; ?>>
+          <img src="<?php echo htmlspecialchars($t['preview']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?> view <?php echo $idx; ?>">
         </div>
         <?php endforeach; ?>
       </div>
-      <?php if ($thumbCoaPdf): ?>
-      <a href="#coa-section" class="product-hero__coa-link">View COA (PDF) &darr;</a>
+      <?php if ($coaPdf): ?>
+      <a href="<?php echo htmlspecialchars($coaPdf); ?>" target="_blank" class="product-hero__coa-link">View COA (PDF) &darr;</a>
       <?php endif; ?>
     </div>
 
@@ -135,7 +186,11 @@
              data-price="<?php echo number_format($size['price'], 2); ?>"
              data-sku="<?php echo htmlspecialchars($size['sku'] ?? ''); ?>"
              data-mg="<?php echo htmlspecialchars($size['mg'] ?? ''); ?>"
-             data-stock="<?php echo htmlspecialchars($size['stock_status'] ?? 'Unknown'); ?>">
+             data-stock="<?php echo htmlspecialchars($size['stock_status'] ?? 'Unknown'); ?>"
+             data-image="<?php echo htmlspecialchars($size['primary_image'] ?? ''); ?>"
+             data-coa-preview="<?php echo htmlspecialchars($size['coa_preview'] ?? ''); ?>"
+             data-coa-pdf="<?php echo htmlspecialchars($size['coa_pdf'] ?? ''); ?>"
+             data-gallery="<?php echo htmlspecialchars(json_encode($size['gallery_images'] ?? [])); ?>">
           <div class="size-option__left">
             <span class="size-option__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
             <span class="size-option__phase"><?php echo htmlspecialchars($size['phase'] ?? ''); ?></span>
@@ -604,6 +659,18 @@
 
 <script>
 (function() {
+  // ── Thumb click handler: swap hero image ──
+  function thumbClickHandler() {
+    var src = this.getAttribute('data-src');
+    var heroImg = document.getElementById('hero-main-image');
+    if (heroImg && src) heroImg.src = src;
+    document.querySelectorAll('.product-hero__thumb').forEach(function(t) { t.classList.remove('active'); });
+    this.classList.add('active');
+  }
+  document.querySelectorAll('.product-hero__thumb').forEach(function(t) {
+    t.addEventListener('click', thumbClickHandler);
+  });
+
   // ── Size selector: update price, SKU, and hidden fields on click ──
   var sizeOptions = document.querySelectorAll('#size-selector .size-option');
   var priceDisplay = document.getElementById('product-price');
@@ -639,6 +706,79 @@
       // Update modal price display
       var orderPriceDisplay = document.getElementById('order-price-display');
       if (orderPriceDisplay) orderPriceDisplay.textContent = '$' + price;
+
+      // ── Swap product images when MG size changes ──
+      var newImage = opt.getAttribute('data-image');
+      var newCoaPreview = opt.getAttribute('data-coa-preview');
+      var newCoaPdf = opt.getAttribute('data-coa-pdf');
+      var newGallery = [];
+      try { newGallery = JSON.parse(opt.getAttribute('data-gallery') || '[]'); } catch(e) {}
+
+      var heroMainImg = document.getElementById('hero-main-image');
+      var thumbsContainer = document.querySelector('.product-hero__thumbs');
+      var coaLink = document.querySelector('.product-hero__coa-link');
+
+      // Update hero image
+      if (newImage && heroMainImg) {
+          heroMainImg.src = newImage;
+          heroMainImg.alt = opt.getAttribute('data-mg') + ' ' + document.getElementById('product-name').value;
+      }
+
+      // Rebuild thumbnails
+      if (thumbsContainer && (newImage || newCoaPreview)) {
+          thumbsContainer.innerHTML = '';
+          var thumbIdx = 0;
+
+          // Product image thumb
+          if (newImage) {
+              thumbIdx++;
+              var div = document.createElement('div');
+              div.className = 'product-hero__thumb' + (thumbIdx === 1 ? ' active' : '');
+              div.setAttribute('data-src', newImage);
+              div.innerHTML = '<img src="' + newImage + '" alt="Product view ' + thumbIdx + '">';
+              div.addEventListener('click', thumbClickHandler);
+              thumbsContainer.appendChild(div);
+          }
+
+          // Gallery images
+          newGallery.forEach(function(gImg) {
+              if (gImg && gImg !== newImage) {
+                  thumbIdx++;
+                  var div = document.createElement('div');
+                  div.className = 'product-hero__thumb';
+                  div.setAttribute('data-src', gImg);
+                  div.innerHTML = '<img src="' + gImg + '" alt="Product view ' + thumbIdx + '">';
+                  div.addEventListener('click', thumbClickHandler);
+                  thumbsContainer.appendChild(div);
+              }
+          });
+
+          // COA preview thumb
+          if (newCoaPreview) {
+              thumbIdx++;
+              var div = document.createElement('div');
+              div.className = 'product-hero__thumb';
+              div.setAttribute('data-src', newCoaPreview);
+              if (newCoaPdf) div.setAttribute('data-pdf', newCoaPdf);
+              div.innerHTML = '<img src="' + newCoaPreview + '" alt="COA Preview">';
+              div.addEventListener('click', thumbClickHandler);
+              thumbsContainer.appendChild(div);
+          }
+      }
+
+      // Update COA link
+      if (coaLink) {
+          if (newCoaPdf) {
+              coaLink.href = newCoaPdf;
+              coaLink.style.display = '';
+          } else {
+              coaLink.style.display = 'none';
+          }
+      }
+
+      // Update hidden product image for cart
+      var productImageInput = document.getElementById('product-image');
+      if (productImageInput && newImage) productImageInput.value = newImage;
 
       // Update modal radio to match
       var radios = document.querySelectorAll('input[name="selected_size"]');

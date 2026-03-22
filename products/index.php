@@ -13,7 +13,7 @@ $slug = isset($_GET['product']) ? trim($_GET['product']) : '';
 // Validate
 if (empty($slug) || !isset($products[$slug]) || !empty($products[$slug]['hidden'])) {
     // Redirect to shop if invalid product
-    header('Location: ' . $base_path . 'shop.php');
+    header('Location: ' . (defined('SHOP_URL') ? SHOP_URL : $base_path . 'shop/'));
     exit;
 }
 

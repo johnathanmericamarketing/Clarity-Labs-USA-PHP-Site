@@ -95,6 +95,10 @@ if ($apiProduct) {
             'stock_status' => $variant['stock_status'] ?? 'Unknown',
             'popular'      => count($allVariants) > 1 && $vi === 1, // middle size = popular
             'card_desc'    => $variant['short_description'] ?? '',
+            'primary_image' => $variant['primary_image'] ?? '',
+            'gallery_images' => $variant['gallery_images'] ?? [],
+            'coa_preview'  => $variant['coa_preview'] ?? '',
+            'coa_pdf'      => $variant['coa_pdf'] ?? '',
         ];
         // Default to the variant matching the requested SKU
         if (($variant['sku'] ?? '') === $sku) {
@@ -117,6 +121,9 @@ if ($apiProduct) {
         }
         if (!empty($apiProduct['coa_pdf'])) {
             $product['api_coa_pdf'] = $apiProduct['coa_pdf'];
+        }
+        if (!empty($apiProduct['coa_preview'])) {
+            $product['api_coa_preview'] = $apiProduct['coa_preview'];
         }
         // Stock status from requested variant
         $product['stock_status'] = $apiProduct['stock_status'] ?? 'Unknown';
@@ -150,6 +157,7 @@ if ($apiProduct) {
             'api_primary_image' => $apiProduct['primary_image'] ?? '',
             'api_gallery_images' => $apiProduct['gallery_images'] ?? [],
             'api_coa_pdf' => $apiProduct['coa_pdf'] ?? '',
+            'api_coa_preview' => $apiProduct['coa_preview'] ?? '',
         ];
     }
 } else {
