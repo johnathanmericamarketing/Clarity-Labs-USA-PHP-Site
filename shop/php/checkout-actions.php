@@ -30,6 +30,7 @@ switch ($action) {
         csrf_verify();
 
         $address = [
+            'name'    => $_POST['shipping_name'] ?? '',
             'street1' => $_POST['shipping_address'] ?? '',
             'street2' => $_POST['shipping_address2'] ?? '',
             'city'    => $_POST['shipping_city'] ?? '',
@@ -43,6 +44,25 @@ switch ($action) {
             'address' => $address,
             'items'   => cart_items_for_api(),
         ], get_customer_token());
+
+        echo json_encode($result);
+        break;
+
+    /* ──────────────────────────────────────────
+       VERIFY ADDRESS
+       ────────────────────────────────────────── */
+    case 'verify-address':
+        csrf_verify();
+
+        $api = new ClarityApiClient();
+        $result = $api->verifyAddress([
+            'street1' => $_POST['shipping_address'] ?? '',
+            'street2' => $_POST['shipping_address2'] ?? '',
+            'city'    => $_POST['shipping_city'] ?? '',
+            'state'   => $_POST['shipping_state'] ?? '',
+            'zip'     => $_POST['shipping_zip'] ?? '',
+            'country' => 'US',
+        ]);
 
         echo json_encode($result);
         break;
@@ -106,8 +126,8 @@ switch ($action) {
             'shipping_zip'           => $input['shipping_zip'] ?? '',
             'shipping_country'       => $input['shipping_country'] ?? 'US',
             'shipping_phone'         => $input['shipping_phone'] ?? '',
-            'payment_method'         => 'stripe',
-            'payment_reference'      => $input['payment_intent_id'] ?? 'pending',
+            'payment_method'         => $input['payment_method'] ?? 'pending',
+            'payment_reference'      => $input['payment_reference'] ?? 'pending',
             'affiliate_code'         => $_SESSION['affiliate_code'] ?? null,
         ];
 
