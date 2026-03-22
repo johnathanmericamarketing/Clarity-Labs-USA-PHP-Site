@@ -105,7 +105,7 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
         $sku = $product['sku'] ?? '';
         $cat = $product['category'] ?? '';
         $catKey = strtolower(str_replace(['&', ' '], ['-', '-'], strip_tags($cat)));
-        $price = $product['sale_price'] ?? $product['retail_price'] ?? 0;
+        $price = $product['price_per_vial'] ?? $product['sale_price'] ?? $product['retail_price'] ?? 0;
         $stockStatus = $product['stock_status'] ?? 'Unknown';
         $primaryImage = $product['primary_image'] ?? '';
         $shortDesc = htmlspecialchars($product['short_description'] ?? '');
