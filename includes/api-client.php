@@ -16,11 +16,95 @@ class ClarityApiClient {
     private string $baseUrl;
     private string $apiKey;
     private int $timeout;
+    private string $cacheDir;
+    private int $cacheTtl = 300; // 5 minutes default
 
     public function __construct() {
         $this->baseUrl = OPS_API_URL;
         $this->apiKey  = CLARITY_API_KEY;
         $this->timeout = 10; // seconds
+        $this->cacheDir = dirname(__DIR__) . '/cache';
+        if (!is_dir($this->cacheDir)) {
+            @mkdir($this->cacheDir, 0755, true);
+        }
+    }
+
+    /* ──────────────────────────────────────────
+       Cache Methods
+       ────────────────────────────────────────── */
+
+    /**
+     * Get data from cache if fresh, otherwise return null
+     */
+    private function cacheGet(string $key): ?array {
+        $file = $this->cacheDir . '/' . md5($key) . '.json';
+        if (!file_exists($file)) return null;
+
+        $mtime = filemtime($file);
+        if ((time() - $mtime) > $this->cacheTtl) {
+            @unlink($file);
+            return null;
+        }
+
+        $data = @file_get_contents($file);
+        if ($data === false) return null;
+
+        $decoded = json_decode($data, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Save data to cache
+     */
+    private function cacheSet(string $key, array $data): void {
+        $file = $this->cacheDir . '/' . md5($key) . '.json';
+        @file_put_contents($file, json_encode($data), LOCK_EX);
+    }
+
+    /**
+     * Clear all cache or specific key
+     */
+    public function cacheClear(?string $key = null): void {
+        if ($key) {
+            $file = $this->cacheDir . '/' . md5($key) . '.json';
+            @unlink($file);
+        } else {
+            $files = glob($this->cacheDir . '/*.json');
+            foreach ($files as $file) {
+                @unlink($file);
+            }
+        }
+    }
+
+    /**
+     * Make a cached GET request — only caches successful responses
+     */
+    public function getCached(string $endpoint, array $params = [], int $ttl = 0): array {
+        $cacheKey = 'api:' . $endpoint . ':' . json_encode($params);
+
+        // Override TTL if specified
+        $originalTtl = $this->cacheTtl;
+        if ($ttl > 0) $this->cacheTtl = $ttl;
+
+        $cached = $this->cacheGet($cacheKey);
+        $this->cacheTtl = $originalTtl;
+
+        if ($cached !== null) {
+            $cached['_from_cache'] = true;
+            return $cached;
+        }
+
+        // Cache miss — fetch fresh
+        $result = $this->get($endpoint, $params);
+
+        // Only cache successful responses
+        if (!empty($result['success']) || ($result['_http_code'] ?? 0) >= 200 && ($result['_http_code'] ?? 0) < 300) {
+            if ($ttl > 0) $this->cacheTtl = $ttl;
+            $this->cacheSet($cacheKey, $result);
+            $this->cacheTtl = $originalTtl;
+        }
+
+        return $result;
     }
 
     /* ──────────────────────────────────────────
@@ -131,18 +215,18 @@ class ClarityApiClient {
        ────────────────────────────────────────── */
 
     /**
-     * Get paginated product list
+     * Get paginated product list (cached 5 min)
      * @param array $filters [category, search, per_page, page]
      */
     public function getProducts(array $filters = []): array {
-        return $this->get('/products', $filters);
+        return $this->getCached('/products', $filters, 300);
     }
 
     /**
-     * Get single product by SKU
+     * Get single product by SKU (cached 5 min)
      */
     public function getProduct(string $sku): array {
-        return $this->get('/products/' . urlencode($sku));
+        return $this->getCached('/products/' . urlencode($sku), [], 300);
     }
 
     /**
@@ -156,7 +240,7 @@ class ClarityApiClient {
      * Get categories with product counts
      */
     public function getCategories(): array {
-        return $this->get('/categories');
+        return $this->getCached('/categories', [], 600); // 10 min cache
     }
 
     /* ──────────────────────────────────────────

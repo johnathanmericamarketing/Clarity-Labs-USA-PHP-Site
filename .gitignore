@@ -14,5 +14,8 @@ desktop.ini
 .vscode/
 .idea/
 
+# API response cache
+cache/
+
 # Claude plans (local only)
 .claude/plans/
