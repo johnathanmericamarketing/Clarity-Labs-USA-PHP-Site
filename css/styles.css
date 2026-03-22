@@ -1242,6 +1242,13 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
 .mega-menu__item:hover .mega-menu__item-name {
   color: var(--green);
 }
+.mega-menu__item-mg {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray-400);
+  margin-left: 6px;
+  letter-spacing: .3px;
+}
 .mega-menu__col--cta {
   background: var(--navy);
   min-width: 210px;

@@ -6,6 +6,11 @@ $isShopSite = (strpos($_SERVER['HTTP_HOST'] ?? '', 'shop.') === 0);
 $shopUrl = defined('SHOP_URL') ? SHOP_URL : 'https://shop.claritylabsusa.com';
 $siteUrl = defined('SITE_URL') ? SITE_URL : 'https://claritylabsusa.com';
 
+// Load product-helpers for grouping
+$helpersFile = __DIR__ . '/product-helpers.php';
+if (!file_exists($helpersFile)) $helpersFile = __DIR__ . '/../includes/product-helpers.php';
+if (file_exists($helpersFile) && !function_exists('group_products_by_compound')) { require_once $helpersFile; }
+
 // On shop subdomain: load products from API for the menu
 // On main site: load from local product-data.php
 if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
@@ -15,8 +20,10 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
         $menuResponse = $menuApi->getProducts(['per_page' => 50]);
         $apiMenuProducts = $menuResponse['data'] ?? [];
     }
+    // Group by compound to deduplicate menu items
+    $groupedMenu = function_exists('group_products_by_compound') ? group_products_by_compound($apiMenuProducts) : $apiMenuProducts;
     $menu_groups = [];
-    foreach ($apiMenuProducts as $mp) {
+    foreach ($groupedMenu as $mp) {
         $cat = $mp['category'] ?? 'Other';
         if (!isset($menu_groups[$cat])) $menu_groups[$cat] = [];
         $menu_groups[$cat][] = $mp;
@@ -32,8 +39,10 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
         $menuApi = new ClarityApiClient();
         $menuResponse = $menuApi->getProducts(['per_page' => 50]);
         $apiMenuProducts = $menuResponse['data'] ?? [];
+        // Group by compound to deduplicate menu items
+        $groupedMenu = function_exists('group_products_by_compound') ? group_products_by_compound($apiMenuProducts) : $apiMenuProducts;
         $menu_groups = [];
-        foreach ($apiMenuProducts as $mp) {
+        foreach ($groupedMenu as $mp) {
             $cat = $mp['category'] ?? 'Other';
             if (!isset($menu_groups[$cat])) $menu_groups[$cat] = [];
             $menu_groups[$cat][] = $mp;
@@ -71,9 +80,20 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
             <?php foreach ($menu_groups as $cat => $group): ?>
             <div class="mega-menu__col">
               <h4 class="mega-menu__heading"><?php echo htmlspecialchars($cat); ?></h4>
-              <?php foreach ($group as $mp): ?>
+              <?php foreach ($group as $mp):
+                $mgTags = '';
+                if (!empty($mp['sizes'])) {
+                    $mgs = array_map(function($s) { return $s['mg']; }, $mp['sizes']);
+                    $mgTags = implode(' / ', $mgs);
+                } elseif (!empty($mp['mg_specification'])) {
+                    $mgTags = $mp['mg_specification'];
+                }
+              ?>
               <a href="<?= $shopUrl ?>/product?sku=<?= urlencode($mp['sku'] ?? '') ?>" class="mega-menu__item">
                 <span class="mega-menu__item-name"><?= htmlspecialchars($mp['name'] ?? '') ?></span>
+                <?php if ($mgTags): ?>
+                <span class="mega-menu__item-mg"><?= htmlspecialchars($mgTags) ?></span>
+                <?php endif; ?>
               </a>
               <?php endforeach; ?>
             </div>
