@@ -481,15 +481,22 @@ $subtotal = cart_subtotal();
     });
     document.getElementById('panel-' + step).classList.add('active');
 
-    // Populate review address on step 2
+    // Populate review address on step 2 (use textContent to prevent XSS)
     if (step === 2) {
       const form = document.getElementById('shipping-form');
       const fd = new FormData(form);
-      document.getElementById('review-shipping-address').innerHTML =
-        fd.get('shipping_first') + ' ' + fd.get('shipping_last') + '<br>' +
-        fd.get('shipping_address') + '<br>' +
-        (fd.get('shipping_address2') ? fd.get('shipping_address2') + '<br>' : '') +
-        fd.get('shipping_city') + ', ' + fd.get('shipping_state') + ' ' + fd.get('shipping_zip');
+      const addrEl = document.getElementById('review-shipping-address');
+      addrEl.textContent = '';
+      const lines = [
+        fd.get('shipping_first') + ' ' + fd.get('shipping_last'),
+        fd.get('shipping_address'),
+      ];
+      if (fd.get('shipping_address2')) lines.push(fd.get('shipping_address2'));
+      lines.push(fd.get('shipping_city') + ', ' + fd.get('shipping_state') + ' ' + fd.get('shipping_zip'));
+      lines.forEach(function(line, i) {
+        addrEl.appendChild(document.createTextNode(line));
+        if (i < lines.length - 1) addrEl.appendChild(document.createElement('br'));
+      });
     }
   }
 
@@ -590,7 +597,6 @@ $subtotal = cart_subtotal();
       }
     } catch (err) {
       // If rate fetch fails, continue with free shipping
-      console.error('Shipping rate error:', err);
       shippingAmount = 0;
       selectedShippingRate = 'free_standard';
       updateTotal();

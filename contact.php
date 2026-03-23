@@ -2,6 +2,10 @@
 $current_page = 'contact';
 $page_title = 'Contact Us';
 $page_description = 'Get in touch with ClarityLabs USA. Questions about research compounds, testing, or orders? We\'re here to help.';
+
+// Session + CSRF for contact form protection
+if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
+require_once __DIR__ . '/includes/csrf.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,6 +37,7 @@ $page_description = 'Get in touch with ClarityLabs USA. Questions about research
       <!-- Form -->
       <div class="contact__form-wrap slide-left">
         <form id="contact-form" method="post" style="position:relative;">
+          <?= csrf_field() ?>
           <!-- Honeypot -->
           <div class="honeypot">
             <label for="website">Website</label>

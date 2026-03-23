@@ -8,11 +8,17 @@
 
 header('Content-Type: application/json');
 
+// ── Session & CSRF ──
+if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
+require_once __DIR__ . '/../includes/csrf.php';
+
 // ── Only accept POST ──
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
     exit;
 }
+
+csrf_verify();
 
 // ── Honeypot check ──
 if (!empty($_POST['website'])) {
@@ -82,17 +88,8 @@ if ($productSlug) {
 // ─────────────────────────────────────────────
 $customerSubject = "Order Confirmation — $product ($size) | Clarity Labs USA";
 
-// Product image block (inline CID if available, otherwise skip)
-$productImgHtml = '';
-if ($productImgPath && file_exists($productImgPath)) {
-    $productImgHtml = '
-      <!-- Product Image -->
-      <tr>
-        <td style="padding:0 32px 8px; text-align:center;">
-          <img src="cid:' . $productImgCid . '" alt="' . $product . '" width="140" style="width:140px; height:auto;">
-        </td>
-      </tr>';
-}
+// Product image block removed — inline CID variables were never defined.
+// The product card section below shows the product name instead.
 
 $customerHtml = '<!DOCTYPE html>
 <html lang="en">

@@ -508,6 +508,10 @@ $page_title = 'Sign In';
 
         if (data.success) {
           const email = formData.get('email');
+          // Escape email for safe HTML insertion
+          const escEmail = document.createElement('span');
+          escEmail.textContent = email;
+          const safeEmail = escEmail.innerHTML;
           // Hide the form tabs and show a full success panel
           document.querySelector('.gate-tabs').style.display = 'none';
           document.getElementById('form-register').style.display = 'none';
@@ -515,7 +519,7 @@ $page_title = 'Sign In';
           messageBox.innerHTML = '<div style="text-align: center; padding: 20px 0;">' +
             '<div style="font-size: 48px; margin-bottom: 12px;">&#9993;</div>' +
             '<h2 style="font-family: var(--font-display); font-size: 24px; color: var(--navy); margin-bottom: 12px;">You\'re Almost There!</h2>' +
-            '<p style="font-size: 15px; color: var(--gray-600); line-height: 1.7; margin-bottom: 24px;">We just sent an email to <strong>' + email + '</strong> with everything you need to get started.</p>' +
+            '<p style="font-size: 15px; color: var(--gray-600); line-height: 1.7; margin-bottom: 24px;">We just sent an email to <strong>' + safeEmail + '</strong> with everything you need to get started.</p>' +
             '<div style="background: var(--green-bg); border: 1px solid var(--green-bdr); border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 20px;">' +
               '<p style="font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 12px;">Here\'s what happens next:</p>' +
               '<div style="font-size: 14px; color: var(--gray-600); line-height: 2;">' +

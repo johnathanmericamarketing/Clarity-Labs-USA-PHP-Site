@@ -5,6 +5,7 @@
    ============================================================ */
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/csrf.php';
 
 header('Content-Type: application/json');
 
@@ -27,6 +28,7 @@ if (!empty($_POST['website'])) {
 
 // ── Rate limiting (simple session-based) ──
 session_start();
+csrf_verify();
 $now = time();
 $cooldown = 60; // seconds between submissions
 if (isset($_SESSION['last_contact_submit']) && ($now - $_SESSION['last_contact_submit']) < $cooldown) {

@@ -60,8 +60,8 @@
           }
 
           // 2. Fallback: local filesystem (legacy)
+          $heroDir = $base_path . 'images/products/' . $slug . '/images/';
           if (!$heroImg) {
-              $heroDir = $base_path . 'images/products/' . $slug . '/images/';
               if (is_dir($heroDir)) {
                   $allFiles = scandir($heroDir);
                   foreach ($allFiles as $f) {
