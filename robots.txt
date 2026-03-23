@@ -1,0 +1,13 @@
+# ClarityLabs USA — robots.txt
+User-agent: *
+Allow: /
+
+# Block internal/sensitive directories
+Disallow: /config/
+Disallow: /cache/
+Disallow: /api/
+Disallow: /shop/php/
+Disallow: /shop/account/
+
+# Sitemap
+Sitemap: https://claritylabsusa.com/sitemap.xml

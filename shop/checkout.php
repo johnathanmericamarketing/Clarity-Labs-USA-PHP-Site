@@ -28,7 +28,6 @@ $subtotal = cart_subtotal();
 <html lang="en">
 <head>
   <?php include __DIR__ . '/../includes/head.php'; ?>
-  <?= csrf_meta() ?>
   <style>
     .checkout { padding: 40px 0 100px; min-height: 70vh; }
 

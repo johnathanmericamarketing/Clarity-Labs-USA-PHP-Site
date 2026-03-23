@@ -21,7 +21,6 @@ $itemCount = cart_count();
 <html lang="en">
 <head>
   <?php include __DIR__ . '/../includes/head.php'; ?>
-  <?= csrf_meta() ?>
   <style>
     .cart { padding: 60px 0 100px; min-height: 60vh; }
     .cart__header { margin-bottom: 32px; }

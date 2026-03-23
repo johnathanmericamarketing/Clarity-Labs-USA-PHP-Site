@@ -25,7 +25,6 @@ $customer = get_customer();
 <html lang="en">
 <head>
   <?php include __DIR__ . '/../../includes/head.php'; ?>
-  <?= csrf_meta() ?>
   <style>
     body { opacity: 1; animation: none; }
     .change-pw-page {

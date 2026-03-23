@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/session.php';
+require_once __DIR__ . '/../../includes/csrf.php';
 require_once __DIR__ . '/../../includes/api-client.php';
 
 clarity_session_start();
@@ -16,10 +17,16 @@ if (!is_logged_in()) {
     exit;
 }
 
+// CSRF validation for state-changing requests (add/remove)
 $action = $_GET['action'] ?? '';
 $sku = $_GET['sku'] ?? $_POST['sku'] ?? '';
 $token = get_customer_token();
 $api = new ClarityApiClient();
+
+// Verify CSRF token for state-changing actions
+if (in_array($action, ['add', 'remove'])) {
+    csrf_verify();
+}
 
 switch ($action) {
     case 'add':

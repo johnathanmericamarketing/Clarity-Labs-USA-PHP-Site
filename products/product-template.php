@@ -903,9 +903,13 @@
       var action = isSaved ? 'remove' : 'add';
       saveBtn.disabled = true;
 
+      var wishCsrfMeta = document.querySelector('meta[name="csrf-token"]');
+      var wishCsrfToken = wishCsrfMeta ? wishCsrfMeta.getAttribute('content') : '';
+
       fetch('<?php echo defined("SHOP_URL") ? SHOP_URL : ""; ?>/php/wishlist-actions.php?action=' + action + '&sku=' + encodeURIComponent(sku), {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 'X-CSRF-TOKEN': wishCsrfToken }
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {

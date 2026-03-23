@@ -10,4 +10,5 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<?php if (function_exists('csrf_meta')) { echo csrf_meta(); } ?>
 <link rel="stylesheet" href="<?php echo isset($base_path) ? $base_path : ''; ?>css/styles.css?v=4">

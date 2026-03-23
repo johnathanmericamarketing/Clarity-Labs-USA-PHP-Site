@@ -26,7 +26,6 @@ $wishlistItems = $wishlistResponse['data'] ?? [];
 <html lang="en">
 <head>
   <?php include __DIR__ . '/../../includes/head.php'; ?>
-  <?php csrf_meta(); ?>
   <style>
     .account { padding: 60px 0 100px; min-height: 60vh; }
     .account__header { margin-bottom: 40px; }
