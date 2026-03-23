@@ -40,6 +40,7 @@ define('SHOP_URL', 'https://shop.claritylabsusa.com');
 define('OPS_API_URL', env('CLARITY_API_URL', 'https://ops.claritylabsbio.com/api/v1'));
 define('CLARITY_API_KEY', env('CLARITY_API_KEY', ''));
 define('STRIPE_PUBLISHABLE_KEY', env('STRIPE_PUBLISHABLE_KEY', ''));
+define('CACHE_CLEAR_TOKEN', env('CACHE_CLEAR_TOKEN', ''));
 
 /* ──────────────────────────────────────────
    Company Info (mirrors clarity-ops config/clarity.php)
