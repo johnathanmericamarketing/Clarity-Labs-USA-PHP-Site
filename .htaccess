@@ -1,0 +1,51 @@
+# ============================================================
+#   ClarityLabsUSA — Root .htaccess
+#   Blocks direct access to sensitive files and directories
+# ============================================================
+
+# Block access to config/ directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block config directory
+    RewriteRule ^config/ - [F,L]
+
+    # Block cache directory
+    RewriteRule ^cache/ - [F,L]
+
+    # Block .git directory
+    RewriteRule ^\.git - [F,L]
+</IfModule>
+
+# Block .env files anywhere
+<FilesMatch "^\.env">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block .json files in cache directory (belt-and-suspenders)
+<FilesMatch "\.json$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block access to .htaccess itself
+<Files .htaccess>
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>

@@ -54,6 +54,7 @@ define('COMPANY_ZIP', '97239');
 define('COMPANY_COUNTRY', 'United States');
 define('COMPANY_EMAIL_ORDERS', 'orders@claritylabsusa.com');
 define('COMPANY_EMAIL_SUPPORT', 'support@claritylabsusa.com');
+define('CONTACT_EMAIL', env('CONTACT_EMAIL', 'support@claritylabsusa.com'));
 define('COMPANY_WEBSITE', 'https://claritylabsusa.com');
 
 define('COMPANY_DISCLAIMER', 'Research Use Only. All products sold by ClarityLabsUSA are intended exclusively for in vitro research and laboratory use by qualified professionals. They are not for human or veterinary consumption, are not evaluated by the Food and Drug Administration, and are not intended to diagnose, treat, cure, or prevent any disease or condition. By completing a purchase, the buyer confirms they are 18 years of age or older and a qualified research professional acting within applicable laws and regulations.');

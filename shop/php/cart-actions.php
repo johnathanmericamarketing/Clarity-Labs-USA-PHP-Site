@@ -9,6 +9,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/csrf.php';
+require_once __DIR__ . '/../../includes/api-client.php';
 
 clarity_session_start();
 
@@ -25,22 +26,42 @@ switch ($action) {
         $sku      = trim($_POST['sku'] ?? '');
         $name     = trim($_POST['name'] ?? '');
         $size     = trim($_POST['size'] ?? '');
-        $price    = (float) ($_POST['price'] ?? 0);
         $qty      = max(1, (int) ($_POST['qty'] ?? 1));
         $imageUrl = trim($_POST['image_url'] ?? '');
 
-        if (empty($sku) || empty($name) || $price <= 0) {
+        if (empty($sku) || empty($name)) {
             echo json_encode(['success' => false, 'error' => 'Invalid product data.']);
             exit;
         }
 
-        // Optional: validate stock via API before adding
-        // $api = new ClarityApiClient();
-        // $avail = $api->getProductAvailability($sku);
-        // if (!$avail['success'] || ($avail['data']['stock_status'] ?? '') === 'Out of Stock') {
-        //     echo json_encode(['success' => false, 'error' => 'This product is currently out of stock.']);
-        //     exit;
-        // }
+        // Server-side price verification: never trust client-side prices
+        $api = new ClarityApiClient();
+        $productData = $api->getProduct($sku);
+
+        if (!$productData['success'] || empty($productData['data'])) {
+            echo json_encode(['success' => false, 'error' => 'Product not found or unavailable.']);
+            exit;
+        }
+
+        $product = $productData['data'];
+        $price = (float) ($product['price'] ?? 0);
+
+        if ($price <= 0) {
+            echo json_encode(['success' => false, 'error' => 'Product price is not available.']);
+            exit;
+        }
+
+        // Use API values for name and size too, to prevent tampering
+        $name     = $product['name'] ?? $name;
+        $size     = $product['size'] ?? $size;
+        $imageUrl = $product['image_url'] ?? $imageUrl;
+
+        // Check stock availability
+        $stockStatus = $product['stock_status'] ?? '';
+        if ($stockStatus === 'Out of Stock') {
+            echo json_encode(['success' => false, 'error' => 'This product is currently out of stock.']);
+            exit;
+        }
 
         cart_add($sku, $name, $size, $price, $qty, $imageUrl);
 

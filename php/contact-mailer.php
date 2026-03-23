@@ -4,10 +4,12 @@
    Configure the $to variable below with your email address.
    ============================================================ */
 
+require_once __DIR__ . '/../config/config.php';
+
 header('Content-Type: application/json');
 
 // ── Configuration ──
-$to = 'your@email.com';  // <-- CHANGE THIS to your email address
+$to = CONTACT_EMAIL;
 $subject_prefix = '[ClarityLabs USA] ';
 
 // ── Only accept POST ──
