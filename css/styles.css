@@ -67,6 +67,7 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
 }
 
 /* ── Layout ── */
+.container { max-width: var(--max-width); margin: 0 auto; padding: 0 40px; }
 .section { padding: 80px 40px; }
 .section-inner { max-width: var(--max-width); margin: 0 auto; }
 .section--gray { background: var(--gray-50); }

@@ -198,7 +198,7 @@ $orders = $ordersResponse['data'] ?? [];
                           </span>
                         </td>
                         <td>$<?= number_format($order['total_amount'] ?? 0, 2) ?></td>
-                        <td><a href="<?= SHOP_URL ?>/account/order-detail?id=<?= $order['id'] ?? '' ?>">View</a></td>
+                        <td><a href="<?= SHOP_URL ?>/account/order-detail?id=<?= (int) ($order['id'] ?? 0) ?>">View</a></td>
                       </tr>
                     <?php endforeach; ?>
                   </tbody>
@@ -218,7 +218,13 @@ $orders = $ordersResponse['data'] ?? [];
 
   <script>
   async function logout() {
-    await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=logout');
+    const formData = new FormData();
+    formData.append('_csrf_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=logout', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
     window.location.href = '<?= SHOP_URL ?>/gate/sign-in';
   }
   </script>

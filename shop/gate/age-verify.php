@@ -10,9 +10,18 @@ require_once __DIR__ . '/../../includes/session.php';
 
 clarity_session_start();
 
+// Validate redirect to prevent open redirects
+function validate_redirect($input) {
+    $redirect = $input ?? '/';
+    if (!preg_match('#^/[a-zA-Z0-9\-_/?.=&%]*$#', $redirect)) {
+        $redirect = '/';
+    }
+    return $redirect;
+}
+
 // If already verified, redirect to shop (or to original destination)
 if (is_age_verified()) {
-    $redirect = $_GET['redirect'] ?? '/';
+    $redirect = validate_redirect($_GET['redirect'] ?? '/');
     header('Location: ' . SHOP_URL . $redirect);
     exit;
 }
@@ -20,12 +29,12 @@ if (is_age_verified()) {
 // Handle POST (age confirmation)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     set_age_verified();
-    $redirect = $_POST['redirect'] ?? '/';
+    $redirect = validate_redirect($_POST['redirect'] ?? '/');
     header('Location: ' . SHOP_URL . '/gate/sign-in?redirect=' . urlencode($redirect));
     exit;
 }
 
-$redirect = $_GET['redirect'] ?? '/';
+$redirect = validate_redirect($_GET['redirect'] ?? '/');
 $page_title = 'Age Verification';
 ?>
 <!DOCTYPE html>

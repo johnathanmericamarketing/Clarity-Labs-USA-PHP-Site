@@ -22,7 +22,7 @@ $orders = $ordersResponse['data'] ?? [];
 <html lang="en">
 <head>
   <?php include __DIR__ . '/../../includes/head.php'; ?>
-  <link rel="stylesheet" href="<?= $base_path ?>css/styles.css?v=2">
+
 </head>
 <body>
   <?php include __DIR__ . '/../../includes/header.php'; ?>
@@ -53,7 +53,7 @@ $orders = $ordersResponse['data'] ?? [];
                     <?= ucfirst($order['status'] ?? 'pending') ?>
                   </span>
                   <strong style="color: var(--navy);">$<?= number_format($order['total_amount'] ?? 0, 2) ?></strong>
-                  <a href="<?= SHOP_URL ?>/account/order-detail?id=<?= $order['id'] ?? '' ?>" style="color: var(--green); font-weight: 500; font-size: 14px;">View Details →</a>
+                  <a href="<?= SHOP_URL ?>/account/order-detail?id=<?= (int) ($order['id'] ?? 0) ?>" style="color: var(--green); font-weight: 500; font-size: 14px;">View Details →</a>
                 </div>
               </div>
             </div>

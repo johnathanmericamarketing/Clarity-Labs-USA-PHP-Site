@@ -57,7 +57,7 @@ $page_description = 'Common questions about ClarityLabs USA research peptides â€
           <span class="faq-question__icon">+</span>
         </button>
         <div class="faq-answer">
-          <div class="faq-answer__inner">We accept all major credit and debit cards, as well as select digital payment options. All transactions are encrypted and processed securely.</div>
+          <div class="faq-answer__inner">We use an invoice-based payment system. After placing your order, you'll receive an invoice with payment instructions. We accept Zelle, Venmo, ACH bank transfer, and check. All transactions are processed securely.</div>
         </div>
       </div>
 

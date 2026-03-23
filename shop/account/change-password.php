@@ -191,12 +191,20 @@ $customer = get_customer();
           window.location.href = '<?= SHOP_URL ?>/';
         }, 2000);
       } else {
-        msgEl.innerHTML = '<div class="change-pw-message change-pw-message--error">' + (data.error || 'Failed to update password.') + '</div>';
+        const errDiv = document.createElement('div');
+        errDiv.className = 'change-pw-message change-pw-message--error';
+        errDiv.textContent = data.error || 'Failed to update password.';
+        msgEl.innerHTML = '';
+        msgEl.appendChild(errDiv);
         btn.disabled = false;
         btn.textContent = 'Set Password & Continue';
       }
     } catch (err) {
-      msgEl.innerHTML = '<div class="change-pw-message change-pw-message--error">Something went wrong. Please try again.</div>';
+      const errDiv = document.createElement('div');
+      errDiv.className = 'change-pw-message change-pw-message--error';
+      errDiv.textContent = 'Something went wrong. Please try again.';
+      msgEl.innerHTML = '';
+      msgEl.appendChild(errDiv);
       btn.disabled = false;
       btn.textContent = 'Set Password & Continue';
     }

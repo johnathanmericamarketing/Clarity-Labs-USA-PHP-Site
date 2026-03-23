@@ -14,14 +14,17 @@ require_once __DIR__ . '/../../includes/access-guard.php';
 // Only enforce age gate here (not login — this IS the login page)
 age_gate_only();
 
+// Validate redirect to prevent open redirects
+$redirect = $_GET['redirect'] ?? '/';
+if (!preg_match('#^/[a-zA-Z0-9\-_/?.=&%]*$#', $redirect)) {
+    $redirect = '/';
+}
+
 // If already logged in, redirect to shop
 if (is_logged_in()) {
-    $redirect = $_GET['redirect'] ?? '/';
     header('Location: ' . SHOP_URL . $redirect);
     exit;
 }
-
-$redirect = $_GET['redirect'] ?? '/';
 $mode = $_GET['mode'] ?? 'login'; // 'login' or 'register'
 $error = '';
 $success = '';
@@ -443,7 +446,11 @@ $page_title = 'Sign In';
     });
 
     function showMessage(type, text) {
-      messageBox.innerHTML = '<div class="gate-message gate-message--' + type + '">' + text + '</div>';
+      messageBox.innerHTML = '';
+      const div = document.createElement('div');
+      div.className = 'gate-message gate-message--' + type;
+      div.textContent = text;
+      messageBox.appendChild(div);
     }
 
     // Login form handler

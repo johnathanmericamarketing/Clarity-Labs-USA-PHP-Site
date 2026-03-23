@@ -849,7 +849,7 @@
       formData.append('price', price);
       formData.append('qty', '1');
       formData.append('image_url', imageUrl);
-      formData.append('csrf_token', csrfToken);
+      formData.append('_csrf_token', csrfToken);
 
       var cartUrl = '<?php echo defined("SHOP_URL") ? SHOP_URL : ""; ?>/php/cart-actions.php?action=add';
 

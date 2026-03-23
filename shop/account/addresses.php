@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     var csrfMeta = document.querySelector('meta[name="csrf-token"]');
     var token = csrfMeta ? csrfMeta.getAttribute('content') : '';
     var fd = new FormData();
-    fd.append('csrf_token', token);
+    fd.append('_csrf_token', token);
     fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=logout', { method: 'POST', body: fd, credentials: 'include' })
       .then(function() { window.location.href = '<?= SHOP_URL ?>/gate/sign-in'; });
   }

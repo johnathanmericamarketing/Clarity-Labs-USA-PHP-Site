@@ -495,7 +495,11 @@ $subtotal = cart_subtotal();
 
   function showError(msg) {
     const el = document.getElementById('checkout-error');
-    el.innerHTML = '<div class="checkout-message checkout-message--error">' + msg + '</div>';
+    el.innerHTML = '';
+    const errDiv = document.createElement('div');
+    errDiv.className = 'checkout-message checkout-message--error';
+    errDiv.textContent = msg;
+    el.appendChild(errDiv);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 

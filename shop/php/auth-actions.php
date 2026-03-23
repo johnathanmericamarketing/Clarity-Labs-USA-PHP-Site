@@ -125,6 +125,12 @@ switch ($action) {
        LOGOUT
        ────────────────────────────────────────── */
     case 'logout':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'error' => 'POST required.']);
+            exit;
+        }
+        csrf_verify();
+
         $token = get_customer_token();
         if ($token) {
             $api = new ClarityApiClient();

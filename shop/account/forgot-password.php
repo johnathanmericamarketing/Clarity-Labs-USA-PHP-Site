@@ -113,10 +113,17 @@ $page_title = 'Reset Password';
         body: formData,
       });
       const data = await res.json();
-      msgEl.innerHTML = '<div class="reset-message reset-message--' + (data.success ? 'success' : 'error') + '">' +
-        (data.message || data.error || 'Something went wrong.') + '</div>';
+      msgEl.innerHTML = '';
+      const div = document.createElement('div');
+      div.className = 'reset-message reset-message--' + (data.success ? 'success' : 'error');
+      div.textContent = data.message || data.error || 'Something went wrong.';
+      msgEl.appendChild(div);
     } catch (err) {
-      msgEl.innerHTML = '<div class="reset-message reset-message--error">Something went wrong. Please try again.</div>';
+      msgEl.innerHTML = '';
+      const errDiv = document.createElement('div');
+      errDiv.className = 'reset-message reset-message--error';
+      errDiv.textContent = 'Something went wrong. Please try again.';
+      msgEl.appendChild(errDiv);
     }
     btn.disabled = false;
     btn.textContent = 'Send Reset Link';
