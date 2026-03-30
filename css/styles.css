@@ -1855,6 +1855,18 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   color: var(--gray-400);
   letter-spacing: 1px;
 }
+.size-option__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.size-option__purity {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teal);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
 .size-option__popular {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1998,11 +2010,23 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   font-size: 11px;
   color: var(--gray-400);
 }
+.size-card__mg-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
 .size-card__mg {
   font-family: var(--font-display);
   font-size: 48px;
   color: var(--navy);
   line-height: 1;
+}
+.size-card__purity {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--teal);
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 .size-card__desc {
   font-size: 14px;

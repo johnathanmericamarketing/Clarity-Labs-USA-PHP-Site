@@ -195,9 +195,14 @@
             <span class="size-option__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
             <span class="size-option__phase"><?php echo htmlspecialchars($size['phase'] ?? ''); ?></span>
           </div>
-          <?php if (!empty($size['popular'])): ?>
-          <span class="size-option__popular">POPULAR</span>
-          <?php endif; ?>
+          <div class="size-option__right">
+            <?php if (!empty($size['purity'])): ?>
+            <span class="size-option__purity"><?php echo number_format($size['purity'], 2); ?>% Pure</span>
+            <?php endif; ?>
+            <?php if (!empty($size['popular'])): ?>
+            <span class="size-option__popular">POPULAR</span>
+            <?php endif; ?>
+          </div>
         </div>
         <?php endforeach; ?>
       </div>
@@ -397,7 +402,12 @@
         <span class="size-card__badge">Most Popular</span>
         <?php endif; ?>
         <span class="size-card__phase"><?php echo htmlspecialchars($size['phase']); ?></span>
-        <span class="size-card__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
+        <div class="size-card__mg-row">
+          <span class="size-card__mg"><?php echo htmlspecialchars($size['mg']); ?></span>
+          <?php if (!empty($size['purity'])): ?>
+          <span class="size-card__purity"><?php echo number_format($size['purity'], 2); ?>% Pure</span>
+          <?php endif; ?>
+        </div>
         <p class="size-card__desc"><?php echo htmlspecialchars($size['card_desc']); ?></p>
         <span class="size-card__note">$<?php echo number_format($size['price'], 2); ?></span>
         <button type="button" class="btn <?php echo $featured ? 'btn--navy' : 'btn--outline-navy'; ?> btn--block js-order-modal-open" data-size="<?php echo htmlspecialchars($size['mg']); ?>" data-sku="<?php echo htmlspecialchars($size['sku'] ?? ''); ?>">Select — <?php echo htmlspecialchars($size['mg']); ?></button>

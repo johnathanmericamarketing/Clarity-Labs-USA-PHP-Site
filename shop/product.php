@@ -91,6 +91,7 @@ if ($apiProduct) {
             'mg'           => $variant['mg_specification'] ?? '',
             'phase'        => 'Standard Phase',
             'price'        => (float) ($variant['price_per_vial'] ?? $variant['sale_price'] ?? 0),
+            'purity'       => $variant['purity'] ?? null,
             'sku'          => $variant['sku'] ?? '',
             'stock_status' => $variant['stock_status'] ?? 'Unknown',
             'popular'      => count($allVariants) > 1 && $vi === 1, // middle size = popular

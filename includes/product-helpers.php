@@ -45,6 +45,7 @@ function group_products_by_compound(array $products): array {
         $grouped[$key]['sizes'][] = [
             'mg'           => $p['mg_specification'] ?? '',
             'price'        => $price,
+            'purity'       => $p['purity'] ?? null,
             'sku'          => $p['sku'] ?? '',
             'stock_status' => $p['stock_status'] ?? 'Unknown',
         ];
