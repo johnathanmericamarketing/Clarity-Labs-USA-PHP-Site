@@ -66,3 +66,10 @@ define('AGE_GATE_DISCLAIMER', 'All products are sold in powder (lyophilized) for
    ────────────────────────────────────────── */
 
 define('R2_PUBLIC_URL', 'https://pub-ff60dc038f7644d1afd85fa7910382f3.r2.dev');
+
+/* ──────────────────────────────────────────
+   Analytics (leave empty to disable)
+   ────────────────────────────────────────── */
+
+define('GA4_MEASUREMENT_ID', env('GA4_MEASUREMENT_ID', ''));       // e.g. G-XXXXXXXXXX
+define('CLARITY_PROJECT_ID', env('CLARITY_PROJECT_ID', ''));       // e.g. abc123xyz

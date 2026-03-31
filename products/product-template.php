@@ -3,6 +3,14 @@
    ClarityLabsUSA — Product Detail Template (Shopify-style)
    Renders any product from $product array
    ============================================================ */
+
+
+// Set SEO variables for head.php OG tags
+$page_type = 'product';
+$page_url = (defined('SITE_URL') ? SITE_URL : 'https://claritylabsusa.com') . '/products/?product=' . urlencode($slug);
+if (!empty($product['sizes'][0]['primary_image'])) {
+    $page_image = $product['sizes'][0]['primary_image'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -940,6 +948,75 @@
   }
 })();
 </script>
+
+<?php
+// JSON-LD: Product Schema
+$defaultSize = $product['sizes'][$defaultIdx ?? 0] ?? ($product['sizes'][0] ?? []);
+$productPrice = $defaultSize['price'] ?? $product['starting_price'] ?? 0;
+$productImage = $defaultSize['primary_image'] ?? $page_image ?? '';
+$productAvailability = ($defaultSize['stock_status'] ?? 'Unknown') !== 'Out of Stock'
+    ? 'https://schema.org/InStock'
+    : 'https://schema.org/OutOfStock';
+
+$productSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+    'name' => $product['name'],
+    'description' => $product['short_desc'] ?? '',
+    'image' => $productImage,
+    'brand' => [
+        '@type' => 'Brand',
+        'name' => defined('COMPANY_NAME') ? COMPANY_NAME : 'Clarity Labs USA',
+    ],
+    'offers' => [
+        '@type' => 'Offer',
+        'url' => $page_url,
+        'priceCurrency' => 'USD',
+        'price' => number_format($productPrice, 2, '.', ''),
+        'availability' => $productAvailability,
+        'seller' => [
+            '@type' => 'Organization',
+            'name' => defined('COMPANY_NAME') ? COMPANY_NAME : 'Clarity Labs USA',
+        ],
+    ],
+];
+
+// Add purity if available
+if (!empty($defaultSize['purity'])) {
+    $productSchema['additionalProperty'] = [
+        '@type' => 'PropertyValue',
+        'name' => 'Purity',
+        'value' => number_format($defaultSize['purity'], 2) . '%',
+    ];
+}
+
+// JSON-LD: BreadcrumbList
+$breadcrumbSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        [
+            '@type' => 'ListItem',
+            'position' => 1,
+            'name' => 'Home',
+            'item' => defined('SITE_URL') ? SITE_URL : 'https://claritylabsusa.com',
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => 'Shop',
+            'item' => defined('SHOP_URL') ? SHOP_URL : 'https://shop.claritylabsusa.com',
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 3,
+            'name' => $product['name'],
+        ],
+    ],
+];
+?>
+<script type="application/ld+json"><?= json_encode($productSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?></script>
+<script type="application/ld+json"><?= json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?></script>
 
 </body>
 </html>
