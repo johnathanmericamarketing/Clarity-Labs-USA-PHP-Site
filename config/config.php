@@ -71,5 +71,6 @@ define('R2_PUBLIC_URL', 'https://pub-ff60dc038f7644d1afd85fa7910382f3.r2.dev');
    Analytics (leave empty to disable)
    ────────────────────────────────────────── */
 
-define('GA4_MEASUREMENT_ID', env('GA4_MEASUREMENT_ID', ''));       // e.g. G-XXXXXXXXXX
+define('GA4_SITE_ID', env('GA4_SITE_ID', 'G-5C02GFWR64'));         // Main site GA4
+define('GA4_SHOP_ID', env('GA4_SHOP_ID', 'G-HPBWY9CRDW'));         // Shop GA4
 define('CLARITY_PROJECT_ID', env('CLARITY_PROJECT_ID', ''));       // e.g. abc123xyz

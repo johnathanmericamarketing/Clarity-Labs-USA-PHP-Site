@@ -471,6 +471,13 @@ $subtotal = cart_subtotal();
   let shippingAmount = 0;
   const subtotal = <?= $subtotal ?>;
 
+  // GA4 begin_checkout event
+  if (typeof ClarityAnalytics !== 'undefined') {
+    ClarityAnalytics.beginCheckout(<?= json_encode(array_map(function($item) {
+      return ['sku' => $item['sku'], 'name' => $item['name'], 'price' => $item['price'], 'quantity' => $item['qty']];
+    }, cart_items())) ?>, subtotal);
+  }
+
   function goToStep(step) {
     document.querySelectorAll('.checkout-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.checkout-step').forEach(s => {
@@ -529,6 +536,10 @@ $subtotal = cart_subtotal();
     el.querySelector('input[type="radio"]').checked = true;
     selectedShippingRate = rateId;
     shippingAmount = parseFloat(price);
+    // GA4 add_shipping_info event
+    if (typeof ClarityAnalytics !== 'undefined') {
+      ClarityAnalytics.addShippingInfo(shippingAmount, el.querySelector('.shipping-rate__carrier')?.textContent || '');
+    }
     updateTotal();
   }
 
@@ -647,6 +658,18 @@ $subtotal = cart_subtotal();
       const data = await res.json();
 
       if (data.success) {
+        // GA4 purchase event
+        if (typeof ClarityAnalytics !== 'undefined') {
+          ClarityAnalytics.purchase({
+            id: data.order_number || '',
+            total: parseFloat(document.getElementById('order-total-btn').textContent) || 0,
+            shipping: shippingAmount,
+            tax: 0,
+            items: <?= json_encode(array_map(function($item) {
+              return ['sku' => $item['sku'], 'name' => $item['name'], 'price' => $item['price'], 'quantity' => $item['qty']];
+            }, cart_items())) ?>
+          });
+        }
         document.getElementById('order-number').textContent = data.order_number || '';
         document.getElementById('order-email').textContent = <?= json_encode($customer['email'] ?? '') ?>;
         goToStep(3);

@@ -673,6 +673,16 @@ if (!empty($product['sizes'][0]['primary_image'])) {
 
 <script>
 (function() {
+  // GA4 view_item event on page load
+  if (typeof ClarityAnalytics !== 'undefined') {
+    ClarityAnalytics.viewItem({
+      name: <?= json_encode($product['name']) ?>,
+      sku: <?= json_encode($defaultSize['sku'] ?? '') ?>,
+      price: <?= json_encode($defaultSize['price'] ?? $product['starting_price'] ?? 0) ?>,
+      category: <?= json_encode($product['category'] ?? '') ?>
+    });
+  }
+
   // ── Thumb click handler: swap hero image ──
   function thumbClickHandler() {
     var src = this.getAttribute('data-src');
@@ -872,6 +882,10 @@ if (!empty($product['sizes'][0]['primary_image'])) {
         .then(function(data) {
           if (data.success) {
             addBtn.textContent = 'Added!';
+            // GA4 add_to_cart event
+            if (typeof ClarityAnalytics !== 'undefined') {
+              ClarityAnalytics.addToCart({ name: name, sku: sku, price: price, quantity: 1 });
+            }
             // Update cart badge if exists
             var badge = document.querySelector('.cart-count');
             if (badge) { badge.textContent = data.cart_count; badge.style.display = 'inline-flex'; }

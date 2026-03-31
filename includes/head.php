@@ -68,13 +68,25 @@
 <?php
 /* ── Analytics (only loads when IDs are configured in config.php) ── */
 
+// Determine which GA4 property to use (shop vs main site)
+$isShop = strpos($_SERVER['HTTP_HOST'] ?? '', 'shop.') === 0;
+$ga4Id = $isShop
+    ? (defined('GA4_SHOP_ID') ? GA4_SHOP_ID : '')
+    : (defined('GA4_SITE_ID') ? GA4_SITE_ID : '');
+
 // Google Analytics 4
-if (defined('GA4_MEASUREMENT_ID') && GA4_MEASUREMENT_ID !== ''): ?>
-<script async src="https://www.googletagmanager.com/gtag/js?id=<?= GA4_MEASUREMENT_ID ?>"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','<?= GA4_MEASUREMENT_ID ?>');</script>
+if ($ga4Id !== ''): ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?= $ga4Id ?>"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','<?= $ga4Id ?>');</script>
 <?php endif;
 
 // Microsoft Clarity
+// Microsoft Clarity
 if (defined('CLARITY_PROJECT_ID') && CLARITY_PROJECT_ID !== ''): ?>
 <script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","<?= CLARITY_PROJECT_ID ?>");</script>
+<?php endif;
+
+// E-commerce event tracking (shop only)
+if ($isShop && $ga4Id !== ''): ?>
+<script src="<?= isset($base_path) ? $base_path : '/' ?>js/analytics-events.js?v=1"></script>
 <?php endif; ?>
