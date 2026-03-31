@@ -26,7 +26,8 @@ $staticPages = [
     ['loc' => '/contact.php', 'priority' => '0.6', 'changefreq' => 'monthly'],
     ['loc' => '/terms.php',   'priority' => '0.3', 'changefreq' => 'yearly'],
     ['loc' => '/privacy.php', 'priority' => '0.3', 'changefreq' => 'yearly'],
-    ['loc' => '/refund.php',  'priority' => '0.3', 'changefreq' => 'yearly'],
+    ['loc' => '/refund.php',     'priority' => '0.3', 'changefreq' => 'yearly'],
+    ['loc' => '/fda-notice.php', 'priority' => '0.4', 'changefreq' => 'yearly'],
 ];
 
 // Product pages from local product-data.php (always available, no API dependency)

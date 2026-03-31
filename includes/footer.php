@@ -97,6 +97,7 @@ if (!empty($_footerRawProducts) && function_exists('group_products_by_compound')
         <a href="<?= $footerSiteUrl ?>/terms">Terms of Service</a>
         <a href="<?= $footerSiteUrl ?>/privacy">Privacy Policy</a>
         <a href="<?= $footerSiteUrl ?>/refund">Refund Policy</a>
+        <a href="<?= $footerSiteUrl ?>/fda-notice">FDA Notice</a>
       </div>
     </div>
   </div>
