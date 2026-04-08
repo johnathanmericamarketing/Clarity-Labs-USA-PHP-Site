@@ -203,13 +203,12 @@ $smsCanReceive = !empty($customer['sms_can_receive']);
       const fd = new FormData(this);
       // Ensure unchecked checkbox sends "0" so server can see toggle off
       if (!fd.has('sms_opt_in')) fd.set('sms_opt_in', '0');
-      fd.set('action', 'update-profile');
 
       const alertBox = document.getElementById('alertBox');
       alertBox.innerHTML = '';
 
       try {
-        const res = await fetch('<?= SHOP_URL ?>/php/auth-actions.php', {
+        const res = await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=update-profile', {
           method: 'POST',
           body: fd,
         });
