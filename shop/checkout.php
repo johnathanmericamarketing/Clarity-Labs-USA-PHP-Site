@@ -10,6 +10,7 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/access-guard.php';
+require_once __DIR__ . '/../includes/api-client.php';
 
 access_guard();
 
@@ -21,6 +22,24 @@ if (cart_is_empty()) {
 
 $page_title = 'Checkout';
 $customer = get_customer();
+
+// Pull fresh profile so checkout can prefill from saved shipping address
+// and know whether the customer already has one saved
+$savedShipping = [];
+$hasSavedShipping = false;
+if (!empty($customer['id']) || is_logged_in()) {
+    try {
+        $checkoutApi = new ClarityApiClient();
+        $me = $checkoutApi->getMe(get_customer_token());
+        if (!empty($me['data'])) {
+            $customer = array_merge($customer, $me['data']);
+            $savedShipping = $me['data']['shipping_address'] ?? [];
+            $hasSavedShipping = !empty($savedShipping['line1']);
+        }
+    } catch (\Throwable $e) {
+        // non-fatal — fall back to empty fields
+    }
+}
 $items = cart_items();
 $subtotal = cart_subtotal();
 ?>
@@ -309,28 +328,39 @@ $subtotal = cart_subtotal();
                   </div>
                 </div>
 
+                <?php if ($hasSavedShipping): ?>
+                <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #4338ca;">
+                  Pre-filled from your saved shipping address. Edit any field below to ship somewhere different.
+                </div>
+                <?php endif; ?>
+
                 <div class="checkout-form__group">
                   <label class="checkout-form__label">Street Address</label>
-                  <input type="text" name="shipping_address" class="checkout-form__input" placeholder="123 Main St" required>
+                  <input type="text" name="shipping_address" class="checkout-form__input" placeholder="123 Main St"
+                         value="<?= htmlspecialchars($savedShipping['line1'] ?? '') ?>" required>
                 </div>
 
                 <div class="checkout-form__group">
                   <label class="checkout-form__label">Apartment, Suite, etc. (optional)</label>
-                  <input type="text" name="shipping_address2" class="checkout-form__input" placeholder="Apt 4B">
+                  <input type="text" name="shipping_address2" class="checkout-form__input" placeholder="Apt 4B"
+                         value="<?= htmlspecialchars($savedShipping['line2'] ?? '') ?>">
                 </div>
 
                 <div class="checkout-form__row--3" style="display: grid; gap: 12px;">
                   <div class="checkout-form__group">
                     <label class="checkout-form__label">City</label>
-                    <input type="text" name="shipping_city" class="checkout-form__input" required>
+                    <input type="text" name="shipping_city" class="checkout-form__input"
+                           value="<?= htmlspecialchars($savedShipping['city'] ?? '') ?>" required>
                   </div>
                   <div class="checkout-form__group">
                     <label class="checkout-form__label">State</label>
-                    <input type="text" name="shipping_state" class="checkout-form__input" placeholder="OR" maxlength="2" required>
+                    <input type="text" name="shipping_state" class="checkout-form__input" placeholder="OR" maxlength="2"
+                           value="<?= htmlspecialchars($savedShipping['state'] ?? '') ?>" required>
                   </div>
                   <div class="checkout-form__group">
                     <label class="checkout-form__label">ZIP Code</label>
-                    <input type="text" name="shipping_zip" class="checkout-form__input" placeholder="97239" required>
+                    <input type="text" name="shipping_zip" class="checkout-form__input" placeholder="97239"
+                           value="<?= htmlspecialchars($savedShipping['zip'] ?? '') ?>" required>
                   </div>
                 </div>
 
@@ -338,6 +368,15 @@ $subtotal = cart_subtotal();
                   <label class="checkout-form__label">Phone (for shipping updates)</label>
                   <input type="tel" name="shipping_phone" class="checkout-form__input"
                          value="<?= htmlspecialchars($customer['phone'] ?? '') ?>" placeholder="(555) 123-4567">
+                </div>
+
+                <div class="checkout-form__group" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <input type="checkbox" name="save_shipping_as_default" id="save_shipping_as_default" value="1"
+                         <?= $hasSavedShipping ? '' : 'checked' ?>
+                         style="width: 18px; height: 18px; margin: 0;">
+                  <label for="save_shipping_as_default" style="margin: 0; font-size: 13px; color: #334155; cursor: pointer;">
+                    Save this as my default shipping address
+                  </label>
                 </div>
 
                 <!-- Shipping Rates -->
@@ -647,6 +686,7 @@ $subtotal = cart_subtotal();
         payment_method: 'pending',
         payment_reference: 'awaiting_invoice',
         shipping_rate_id: selectedShippingRate,
+        save_shipping_as_default: form.querySelector('[name="save_shipping_as_default"]')?.checked ? 1 : 0,
       };
 
       const res = await fetch('<?= SHOP_URL ?>/php/checkout-actions.php?action=place-order', {

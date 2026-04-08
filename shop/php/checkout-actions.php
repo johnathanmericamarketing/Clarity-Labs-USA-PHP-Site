@@ -133,6 +133,7 @@ switch ($action) {
             'payment_method'   => $input['payment_method'] ?? 'pending',
             'payment_reference' => $input['payment_reference'] ?? 'awaiting_invoice',
             'affiliate_code'   => $_SESSION['affiliate_code'] ?? null,
+            'save_shipping_as_default' => !empty($input['save_shipping_as_default']),
         ];
 
         $result = $api->createOrder($orderData, get_customer_token());
