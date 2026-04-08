@@ -406,6 +406,13 @@ class ClarityApiClient {
         return $this->put('/auth/profile', $data, $bearerToken);
     }
 
+    /**
+     * Confirm SMS opt-in via web UI (customer types CONFIRM on settings page)
+     */
+    public function confirmSms(string $confirmationText, string $bearerToken): array {
+        return $this->post('/auth/sms-confirm', ['confirmation_text' => $confirmationText], $bearerToken);
+    }
+
     /* ──────────────────────────────────────────
        Wishlist Endpoints
        ────────────────────────────────────────── */

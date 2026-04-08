@@ -178,8 +178,15 @@ $smsCanReceive = !empty($customer['sms_can_receive']);
           </label>
         </div>
         <?php if ($smsState === 'pending'): ?>
-          <div style="font-size: 12px; color: #92400e; margin-top: 8px;">
-            We sent a confirmation text. Reply <strong>YES</strong> to start receiving updates.
+          <div id="confirmBlock" style="margin-top: 14px; padding: 14px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px;">
+            <div style="font-size: 13px; color: #92400e; margin-bottom: 10px;">
+              <strong>One more step.</strong> To finalize SMS notifications, type <strong>CONFIRM</strong> below and click the button. We'll send a welcome text right after.
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="confirmationText" placeholder="Type CONFIRM" autocomplete="off"
+                     style="flex: 1; padding: 10px 12px; border: 1px solid #fdba74; border-radius: 8px; font-size: 14px; text-transform: uppercase;">
+              <button type="button" id="confirmBtn" style="background: #ea580c; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">Confirm</button>
+            </div>
           </div>
         <?php endif; ?>
       </div>
@@ -229,6 +236,48 @@ $smsCanReceive = !empty($customer['sms_can_receive']);
         alertBox.innerHTML = '<div class="alert alert-error">Network error. Please try again.</div>';
       }
     });
+
+    // SMS web double opt-in confirm handler
+    const confirmBtn = document.getElementById('confirmBtn');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async function() {
+        const text = (document.getElementById('confirmationText').value || '').trim();
+        if (text.toUpperCase() !== 'CONFIRM') {
+          document.getElementById('alertBox').innerHTML =
+            '<div class="alert alert-error">Please type CONFIRM (in capital letters).</div>';
+          return;
+        }
+
+        const fd = new FormData();
+        fd.append('_csrf_token', '<?= htmlspecialchars(csrf_token()) ?>');
+        fd.append('confirmation_text', text);
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Confirming...';
+
+        try {
+          const res = await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=sms-confirm', {
+            method: 'POST',
+            body: fd,
+          });
+          const data = await res.json();
+          const alertBox = document.getElementById('alertBox');
+          if (data.success) {
+            alertBox.innerHTML = '<div class="alert alert-success">' + (data.message || 'Confirmed!') + '</div>';
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            alertBox.innerHTML = '<div class="alert alert-error">' + (data.error || 'Confirmation failed.') + '</div>';
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirm';
+          }
+        } catch (err) {
+          document.getElementById('alertBox').innerHTML =
+            '<div class="alert alert-error">Network error. Please try again.</div>';
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Confirm';
+        }
+      });
+    }
   </script>
 </body>
 </html>

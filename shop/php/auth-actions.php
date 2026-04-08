@@ -253,6 +253,39 @@ switch ($action) {
         }
         break;
 
+    /* ──────────────────────────────────────────
+       SMS CONFIRM (web double opt-in)
+       ────────────────────────────────────────── */
+    case 'sms-confirm':
+        csrf_verify();
+
+        if (!is_logged_in()) {
+            echo json_encode(['success' => false, 'error' => 'You must be logged in.']);
+            exit;
+        }
+
+        $confirmationText = trim((string) ($_POST['confirmation_text'] ?? ''));
+        if ($confirmationText === '') {
+            echo json_encode(['success' => false, 'error' => 'Type CONFIRM to finalize.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->confirmSms($confirmationText, get_customer_token());
+
+        if (!empty($result['success']) || ($result['status'] ?? null) === 'ok') {
+            echo json_encode([
+                'success' => true,
+                'message' => $result['message'] ?? 'SMS notifications confirmed.',
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => $result['message'] ?? $result['error'] ?? 'Confirmation failed.',
+            ]);
+        }
+        break;
+
     default:
         echo json_encode(['success' => false, 'error' => 'Invalid action.']);
         break;
