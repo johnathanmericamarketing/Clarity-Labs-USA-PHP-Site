@@ -413,6 +413,14 @@ class ClarityApiClient {
         return $this->post('/auth/sms-confirm', ['confirmation_text' => $confirmationText], $bearerToken);
     }
 
+    /**
+     * Customer self-reports they sent a Venmo/Zelle payment for an order.
+     * Creates a pending_review payment claim on the ops side.
+     */
+    public function markOrderPaidSelfReport(int $orderId, array $data, string $bearerToken): array {
+        return $this->post("/orders/{$orderId}/mark-paid", $data, $bearerToken);
+    }
+
     /* ──────────────────────────────────────────
        Wishlist Endpoints
        ────────────────────────────────────────── */

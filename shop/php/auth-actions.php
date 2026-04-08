@@ -254,6 +254,47 @@ switch ($action) {
         break;
 
     /* ──────────────────────────────────────────
+       MARK ORDER PAID — customer self-report
+       ────────────────────────────────────────── */
+    case 'mark-order-paid':
+        csrf_verify();
+
+        if (!is_logged_in()) {
+            echo json_encode(['success' => false, 'error' => 'You must be logged in.']);
+            exit;
+        }
+
+        $orderId = (int) ($_POST['order_id'] ?? 0);
+        $provider = $_POST['provider'] ?? '';
+        $reference = trim((string) ($_POST['reference'] ?? ''));
+        $notes = trim((string) ($_POST['notes'] ?? ''));
+
+        if ($orderId < 1 || !in_array($provider, ['venmo', 'zelle'], true)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid order or payment method.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->markOrderPaidSelfReport($orderId, [
+            'provider' => $provider,
+            'reference' => $reference ?: null,
+            'notes' => $notes ?: null,
+        ], get_customer_token());
+
+        if (!empty($result['success']) || ($result['status'] ?? null) === 'ok') {
+            echo json_encode([
+                'success' => true,
+                'message' => $result['message'] ?? 'Thanks — we\'ll confirm your payment shortly.',
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => $result['message'] ?? $result['error'] ?? 'Failed to record payment.',
+            ]);
+        }
+        break;
+
+    /* ──────────────────────────────────────────
        SMS CONFIRM (web double opt-in)
        ────────────────────────────────────────── */
     case 'sms-confirm':
