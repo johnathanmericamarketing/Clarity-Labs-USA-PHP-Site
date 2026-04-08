@@ -116,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="<?= SHOP_URL ?>/account/orders">Order History</a>
             <a href="<?= SHOP_URL ?>/account/addresses" class="active">Addresses</a>
             <a href="<?= SHOP_URL ?>/account/wishlist">Saved Products</a>
+            <a href="<?= SHOP_URL ?>/account/settings">Settings</a>
             <a href="<?= SHOP_URL ?>/support/">Support</a>
             <div class="account-nav__logout">
               <a href="#" onclick="logout(); return false;">Sign Out</a>

@@ -66,6 +66,8 @@ switch ($action) {
         $firstName   = trim($_POST['first_name'] ?? '');
         $lastName    = trim($_POST['last_name'] ?? '');
         $email       = trim($_POST['email'] ?? '');
+        $phone       = trim($_POST['phone'] ?? '');
+        $smsOptIn    = !empty($_POST['sms_opt_in']);
         $birthMonth  = (int) ($_POST['birth_month'] ?? 0);
         $birthYear   = (int) ($_POST['birth_year'] ?? 0);
         $researchOk  = !empty($_POST['research_confirmed']);
@@ -102,6 +104,8 @@ switch ($action) {
             'first_name'         => $firstName,
             'last_name'          => $lastName,
             'email'              => $email,
+            'phone'              => $phone ?: null,
+            'sms_opt_in'         => $smsOptIn,
             'password'           => $tempPassword,
             'birth_month'        => $birthMonth,
             'birth_year'         => $birthYear,
@@ -200,6 +204,51 @@ switch ($action) {
             echo json_encode([
                 'success' => false,
                 'error' => $result['message'] ?? $result['error'] ?? 'Failed to update password.',
+            ]);
+        }
+        break;
+
+    /* ──────────────────────────────────────────
+       UPDATE PROFILE (account settings)
+       ────────────────────────────────────────── */
+    case 'update-profile':
+        csrf_verify();
+
+        if (!is_logged_in()) {
+            echo json_encode(['success' => false, 'error' => 'You must be logged in.']);
+            exit;
+        }
+
+        $payload = [];
+        foreach (['first_name', 'last_name', 'email', 'phone'] as $field) {
+            if (isset($_POST[$field])) {
+                $payload[$field] = trim((string) $_POST[$field]);
+            }
+        }
+        if (isset($_POST['sms_opt_in'])) {
+            $payload['sms_opt_in'] = !empty($_POST['sms_opt_in']) && $_POST['sms_opt_in'] !== '0';
+        }
+
+        if (empty($payload)) {
+            echo json_encode(['success' => false, 'error' => 'Nothing to update.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->updateProfile($payload, get_customer_token());
+
+        if (!empty($result['success']) || ($result['status'] ?? null) === 'ok') {
+            // Refresh session customer cache
+            $me = $api->getMe(get_customer_token());
+            if (!empty($me['data'])) {
+                set_customer($me['data'], get_customer_token());
+            }
+            echo json_encode(['success' => true, 'message' => 'Profile updated successfully.']);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => $result['message'] ?? $result['error'] ?? 'Failed to update profile.',
+                'errors' => $result['errors'] ?? null,
             ]);
         }
         break;

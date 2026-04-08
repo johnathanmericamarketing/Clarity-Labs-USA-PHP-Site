@@ -375,6 +375,16 @@ $page_title = 'Sign In';
         </div>
 
         <div class="gate-form__group">
+          <label class="gate-form__label" for="reg-phone">Phone Number <span style="font-weight:400;color:#9ca3af;">(optional)</span></label>
+          <input type="tel" id="reg-phone" name="phone" class="gate-form__input" placeholder="+1 555 123 4567">
+        </div>
+
+        <div class="gate-form__checkbox">
+          <input type="checkbox" id="reg-sms-opt-in" name="sms_opt_in" value="1">
+          <label for="reg-sms-opt-in">Text me order updates (paid, shipped, delivered). We'll send a confirmation text — reply YES to start. Reply STOP at any time. Msg &amp; data rates may apply.</label>
+        </div>
+
+        <div class="gate-form__group">
           <label class="gate-form__label">Date of Birth</label>
           <div class="gate-form__dob">
             <select name="birth_month" id="reg-month" required>
