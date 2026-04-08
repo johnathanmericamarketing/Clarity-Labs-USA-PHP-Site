@@ -120,28 +120,32 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
               <div class="pay-card pay-card--zelle">
                 <div class="pay-card__eyebrow">Option 1</div>
                 <div class="pay-card__title">Zelle</div>
-                <div class="pay-card__row">
-                  <div class="pay-card__label">Send to</div>
-                  <div class="pay-card__value pay-card__value--mono">
-                    <span id="zelle-email"><?= htmlspecialchars($zelleEmail) ?></span>
-                    <button type="button" onclick="copyText('<?= htmlspecialchars($zelleEmail) ?>', 'zelle-feedback')" class="pay-card__copy">Copy</button>
+                <div style="display: flex; gap: 14px;">
+                  <div style="flex: 1;">
+                    <div class="pay-card__row">
+                      <div class="pay-card__label">Send to</div>
+                      <div class="pay-card__value pay-card__value--mono">
+                        <span id="zelle-email"><?= htmlspecialchars($zelleEmail) ?></span>
+                        <button type="button" onclick="copyText('<?= htmlspecialchars($zelleEmail) ?>', 'zelle-feedback')" class="pay-card__copy">Copy</button>
+                      </div>
+                    </div>
+                    <div class="pay-card__row">
+                      <div class="pay-card__label">Amount</div>
+                      <div class="pay-card__value"><strong>$<?= number_format((float) ($order['total_amount'] ?? 0), 2) ?></strong></div>
+                    </div>
+                    <div class="pay-card__row">
+                      <div class="pay-card__label">Memo</div>
+                      <div class="pay-card__value pay-card__value--mono"><?= htmlspecialchars($order['order_number'] ?? '') ?></div>
+                    </div>
                   </div>
-                </div>
-                <div class="pay-card__row">
-                  <div class="pay-card__label">Name</div>
-                  <div class="pay-card__value">ClarityLabs USA</div>
-                </div>
-                <div class="pay-card__row">
-                  <div class="pay-card__label">Amount</div>
-                  <div class="pay-card__value"><strong>$<?= number_format((float) ($order['total_amount'] ?? 0), 2) ?></strong></div>
-                </div>
-                <div class="pay-card__row">
-                  <div class="pay-card__label">Memo</div>
-                  <div class="pay-card__value pay-card__value--mono"><?= htmlspecialchars($order['order_number'] ?? '') ?></div>
+                  <div style="width: 100px; text-align: center;">
+                    <img src="/images/zelle-qr.png" alt="Zelle QR" style="width: 100px; height: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                    <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Scan to pay</div>
+                  </div>
                 </div>
                 <div id="zelle-feedback" class="pay-card__feedback">Copied!</div>
                 <div class="pay-card__steps">
-                  <strong>Steps:</strong> Open your Chase app → tap <em>Pay & Transfer</em> → <em>Zelle</em> → send to the email above → enter the amount → type the memo.
+                  <strong>Steps:</strong> Scan the QR, or open your Chase app → <em>Pay & Transfer</em> → <em>Zelle</em> → send to the email above → enter the amount → type the memo.
                 </div>
               </div>
 
