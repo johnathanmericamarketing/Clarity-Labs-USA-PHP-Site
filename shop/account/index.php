@@ -16,8 +16,16 @@ $page_title = 'My Account';
 $customer = get_customer();
 $customerName = get_customer_name();
 
-// Fetch recent orders
+// Fetch fresh customer data from ops (total_orders, total_spend, etc. may
+// have changed since login — session cache would be stale otherwise)
 $api = new ClarityApiClient();
+$me = $api->getMe(get_customer_token());
+if (!empty($me['data'])) {
+    $customer = array_merge($customer, $me['data']);
+    set_customer($customer, get_customer_token());
+}
+
+// Fetch recent orders
 $ordersResponse = $api->getOrders(get_customer_token(), ['per_page' => 5]);
 $orders = $ordersResponse['data'] ?? [];
 ?>
@@ -115,7 +123,8 @@ $orders = $ordersResponse['data'] ?? [];
       font-weight: 500;
     }
 
-    .order-status--pending { background: #FEF3C7; color: #92400E; }
+    .order-status--pending,
+    .order-status--awaiting_payment { background: #FEF3C7; color: #92400E; }
     .order-status--processing { background: #DBEAFE; color: #1E40AF; }
     .order-status--paid { background: #D1FAE5; color: #065F46; }
     .order-status--shipped { background: #E0E7FF; color: #3730A3; }
@@ -195,7 +204,7 @@ $orders = $ordersResponse['data'] ?? [];
                         <td><?= isset($order['ordered_at']) ? date('M j, Y', strtotime($order['ordered_at'])) : '—' ?></td>
                         <td>
                           <span class="order-status order-status--<?= strtolower($order['status'] ?? 'pending') ?>">
-                            <?= ucfirst($order['status'] ?? 'pending') ?>
+                            <?= ucwords(str_replace('_', ' ', $order['status'] ?? 'pending')) ?>
                           </span>
                         </td>
                         <td>$<?= number_format($order['total_amount'] ?? 0, 2) ?></td>

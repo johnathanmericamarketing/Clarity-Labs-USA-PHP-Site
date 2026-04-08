@@ -50,7 +50,7 @@ $orders = $ordersResponse['data'] ?? [];
                 </div>
                 <div style="display: flex; align-items: center; gap: 16px;">
                   <span class="order-status order-status--<?= strtolower($order['status'] ?? 'pending') ?>" style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;">
-                    <?= ucfirst($order['status'] ?? 'pending') ?>
+                    <?= ucwords(str_replace('_', ' ', $order['status'] ?? 'pending')) ?>
                   </span>
                   <strong style="color: var(--navy);">$<?= number_format($order['total_amount'] ?? 0, 2) ?></strong>
                   <a href="<?= SHOP_URL ?>/account/order-detail?id=<?= (int) ($order['id'] ?? 0) ?>" style="color: var(--green); font-weight: 500; font-size: 14px;">View Details →</a>

@@ -56,7 +56,7 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
           </div>
           <span class="order-status order-status--<?= strtolower($order['status'] ?? 'pending') ?>"
                 style="display: inline-block; padding: 6px 16px; border-radius: 12px; font-size: 13px; font-weight: 600;">
-            <?= ucfirst($order['status'] ?? 'pending') ?>
+            <?= ucwords(str_replace('_', ' ', $order['status'] ?? 'pending')) ?>
           </span>
         </div>
 
