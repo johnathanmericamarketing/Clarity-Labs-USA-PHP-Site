@@ -306,13 +306,6 @@ class ClarityApiClient {
         return $this->post('/auth/change-password', $data, $bearerToken);
     }
 
-    /**
-     * Update customer profile (name, email, phone, sms opt-in, billing address)
-     */
-    public function updateProfile(array $data, string $bearerToken): array {
-        return $this->put('/auth/profile', $data, $bearerToken);
-    }
-
     /* ──────────────────────────────────────────
        Order Endpoints
        ────────────────────────────────────────── */
