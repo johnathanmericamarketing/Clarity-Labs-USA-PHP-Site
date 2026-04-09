@@ -107,6 +107,15 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* Lock the header box to its max (unscrolled) height so the logo
+     can shrink inside it without changing document height. This is
+     what prevents the scroll-jump oscillation that made the menu
+     "jump up and down and unclickable" — without a fixed min-height,
+     the logo shrinking from 80→42 px used to shrink the header by
+     38 px, which shifted scroll position and re-triggered the class
+     toggle. 108 = 80 (max logo) + 2×14 (padding). */
+  min-height: 108px;
+  box-sizing: border-box;
 }
 .header__logo {
   display: flex;
@@ -2397,6 +2406,7 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   .section { padding: 56px 24px; }
 
   /* Header */
+  .header__inner { min-height: 82px; } /* 54 logo + 2×14 padding */
   .header__logo-icon { height: 54px; }
   .header--scrolled .header__logo-icon { height: 38px; }
   .header__logo-name { font-size: 22px; }
@@ -2536,6 +2546,7 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   .section { padding: 40px 16px; }
 
   .header__inner { padding: 10px 16px; }
+  .header__inner { min-height: 68px; } /* 40 logo + 2×14 padding */
   .header__logo { gap: 8px; }
   .header__logo-icon { height: 40px; }
   .header--scrolled .header__logo-icon { height: 34px; }
