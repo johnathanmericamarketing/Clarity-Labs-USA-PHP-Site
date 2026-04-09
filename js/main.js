@@ -26,18 +26,31 @@
     });
   }
 
-  /* ── Sticky Header ── */
+  /* ── Sticky Header ──
+     Uses hysteresis (add at 60px, remove at 30px) to prevent oscillation:
+     when the sticky header shrinks on scroll, it changes document height
+     and can pull pageYOffset back under the threshold, which would toggle
+     the class off, grow the header, and re-trigger the whole loop. With
+     separate add/remove thresholds the small height change can never flip
+     the state back. Also rAF-throttled so rapid scroll events coalesce. */
   const header = document.getElementById('header');
   if (header) {
-    var lastY = 0;
+    var isScrolled = false;
+    var rafPending = false;
     window.addEventListener('scroll', function () {
-      var y = window.pageYOffset;
-      if (y > 50) {
-        header.classList.add('header--scrolled');
-      } else {
-        header.classList.remove('header--scrolled');
-      }
-      lastY = y;
+      if (rafPending) return;
+      rafPending = true;
+      window.requestAnimationFrame(function () {
+        rafPending = false;
+        var y = window.pageYOffset;
+        if (!isScrolled && y > 60) {
+          header.classList.add('header--scrolled');
+          isScrolled = true;
+        } else if (isScrolled && y < 30) {
+          header.classList.remove('header--scrolled');
+          isScrolled = false;
+        }
+      });
     }, { passive: true });
   }
 
