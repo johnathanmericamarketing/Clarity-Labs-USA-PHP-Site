@@ -35,9 +35,12 @@ switch ($action) {
             exit;
         }
         $result = $api->addToWishlist($sku, $token);
+        // Ops API returns either {status: 'ok'} or {success: true} depending
+        // on the endpoint version. Accept both to avoid silent false-negatives.
+        $ok = !empty($result['success']) || (($result['status'] ?? '') === 'ok');
         echo json_encode([
-            'success' => ($result['status'] ?? '') === 'ok',
-            'message' => $result['message'] ?? 'Saved.',
+            'success' => $ok,
+            'message' => $result['message'] ?? ($ok ? 'Saved.' : ($result['error'] ?? 'Failed to save.')),
         ]);
         break;
 
@@ -47,9 +50,10 @@ switch ($action) {
             exit;
         }
         $result = $api->removeFromWishlist($sku, $token);
+        $ok = !empty($result['success']) || (($result['status'] ?? '') === 'ok');
         echo json_encode([
-            'success' => ($result['status'] ?? '') === 'ok',
-            'message' => $result['message'] ?? 'Removed.',
+            'success' => $ok,
+            'message' => $result['message'] ?? ($ok ? 'Removed.' : ($result['error'] ?? 'Failed to remove.')),
         ]);
         break;
 

@@ -71,9 +71,12 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
             $remainingMins = (int) floor(($remainingSecs % 3600) / 60);
             $expired = $remainingSecs <= 0;
 
-            $zelleEmail = 'orders@claritylabsusa.com';      // TODO: pull from config
-            $venmoHandle = 'claritylabsusa';                // bare handle
-            $venmoDeepLink = 'https://venmo.com/' . $venmoHandle;
+            // Phase 10.9 — pulled from config constants (see config/config.php)
+            $zelleEmail = ZELLE_EMAIL;
+            $zelleBusinessName = ZELLE_BUSINESS_NAME;
+            $venmoHandle = VENMO_HANDLE;
+            $venmoDisplayName = VENMO_DISPLAY_NAME;
+            $venmoDeepLink = VENMO_DEEP_LINK;
           ?>
           <div class="payment-box payment-box--awaiting">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
@@ -363,10 +366,25 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
               document.getElementById('paid-modal').style.display = 'none';
               document.getElementById('paid-form-alert').innerHTML = '';
             }
+            // Phase 10.9: in-flight flag prevents double-click → duplicate
+            // payment claims. Submit button is disabled + label swapped
+            // while the request is pending, re-enabled only on error path.
+            var paidFormSubmitting = false;
             document.getElementById('paid-form').addEventListener('submit', async function(e) {
               e.preventDefault();
+              if (paidFormSubmitting) return;
+
               var alertBox = document.getElementById('paid-form-alert');
+              var submitBtn = this.querySelector('button[type="submit"]');
+              var origLabel = submitBtn ? submitBtn.textContent : 'Submit';
+
               alertBox.innerHTML = '';
+              paidFormSubmitting = true;
+              if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+              }
+
               var fd = new FormData(this);
               try {
                 var res = await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=mark-order-paid', {
@@ -376,12 +394,17 @@ $page_title = 'Order ' . ($order['order_number'] ?? '');
                 var data = await res.json();
                 if (data.success) {
                   alertBox.innerHTML = '<div class="alert-success">' + (data.message || 'Payment reported.') + '</div>';
+                  // Leave button disabled on success; page will reload
                   setTimeout(function() { location.reload(); }, 1800);
                 } else {
                   alertBox.innerHTML = '<div class="alert-error">' + (data.error || 'Failed to record payment.') + '</div>';
+                  paidFormSubmitting = false;
+                  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = origLabel; }
                 }
               } catch (err) {
                 alertBox.innerHTML = '<div class="alert-error">Network error. Please try again.</div>';
+                paidFormSubmitting = false;
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = origLabel; }
               }
             });
           </script>

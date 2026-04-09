@@ -57,6 +57,21 @@ define('COMPANY_EMAIL_SUPPORT', 'support@claritylabsusa.com');
 define('CONTACT_EMAIL', env('CONTACT_EMAIL', 'support@claritylabsusa.com'));
 define('COMPANY_WEBSITE', 'https://claritylabsusa.com');
 
+/* ──────────────────────────────────────────
+   Payment Display Config (Phase 9.3)
+
+   These are the public values shown to customers on the checkout
+   Awaiting Payment page and invoice emails. They are NOT used for
+   auth — the actual sender address / Venmo profile is configured on
+   the bank / Venmo side. If the business account changes, update
+   these constants here (single source of truth).
+   ────────────────────────────────────────── */
+define('ZELLE_EMAIL', env('ZELLE_EMAIL', 'orders@claritylabsusa.com'));
+define('ZELLE_BUSINESS_NAME', env('ZELLE_BUSINESS_NAME', 'ClarityLabs USA'));
+define('VENMO_HANDLE', env('VENMO_HANDLE', 'claritylabsusa'));     // bare handle, no @
+define('VENMO_DISPLAY_NAME', env('VENMO_DISPLAY_NAME', 'ClarityLabs USA'));
+define('VENMO_DEEP_LINK', 'https://venmo.com/' . VENMO_HANDLE);
+
 define('COMPANY_DISCLAIMER', 'Research Use Only. All products sold by ClarityLabsUSA are intended exclusively for in vitro research and laboratory use by qualified professionals. They are not for human or veterinary consumption, are not evaluated by the Food and Drug Administration, and are not intended to diagnose, treat, cure, or prevent any disease or condition. By completing a purchase, the buyer confirms they are 21 years of age or older and a qualified research professional acting within applicable laws and regulations.');
 
 define('AGE_GATE_DISCLAIMER', 'All products are sold in powder (lyophilized) form and require reconstitution with a suitable diluent for research purposes only. Research supplies (e.g., syringes, bacteriostatic water) are not included. No dosing instructions are provided. We adhere to all local and state laws around Research Only Chemical sales. We are not a pharmacy, nor do we promote or provide any advice for human or animal consumption. Please review our terms and conditions carefully before making a purchase on our website.');
