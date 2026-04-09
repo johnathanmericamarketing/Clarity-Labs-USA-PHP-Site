@@ -34,6 +34,30 @@ $product = null;
 
 // First: try API
 $api = new ClarityApiClient();
+
+// Restrict the local $products marketing catalog to items that are currently
+// visible in the API. This is what makes Test Mode work on the product detail
+// page: when Test Mode is ON the API only returns SUP-TEST products, so no
+// local marketing entries match and the "Other Compounds to Explore" section
+// at the bottom of this page hides entirely. In production it's a no-op
+// because every local entry has a matching live API product.
+try {
+    $liveList = $api->getProducts(['per_page' => 100]);
+    $liveNames = [];
+    foreach (($liveList['data'] ?? []) as $lp) {
+        if (!empty($lp['name']))     $liveNames[strtolower($lp['name'])] = true;
+        if (!empty($lp['compound'])) $liveNames[strtolower($lp['compound'])] = true;
+    }
+    if (!empty($liveNames)) {
+        $products = array_filter($products, function ($p) use ($liveNames) {
+            return isset($liveNames[strtolower($p['name'] ?? '')])
+                || isset($liveNames[strtolower($p['compound'] ?? '')]);
+        });
+    }
+} catch (\Throwable $e) {
+    // Fail open to full local catalog if the API is unreachable
+}
+
 $apiResponse = $api->getProduct($sku);
 $apiProduct = ($apiResponse['success'] ?? false) ? ($apiResponse['data'] ?? null) : null;
 
