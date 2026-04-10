@@ -36,8 +36,11 @@ $product = null;
 $api = new ClarityApiClient();
 
 // PHASE 12c: Check for a PUBLISHED AI-generated page for this compound.
-// If one exists, we render a completely different template (the AI page)
-// and bypass the legacy product-data.php flow entirely.
+// If one exists, we MERGE the AI content into the same $product array
+// that the existing products/product-template.php expects, so the hero
+// (image, size selector, cart, trust badges) stays exactly as customers
+// know it, while the sections below the hero (Why, Designed For, Protocol
+// Context) get the richer AI-generated copy.
 $aiPage = null;
 try {
     $aiResponse = $api->getProductPage($sku);
@@ -45,66 +48,7 @@ try {
         $aiPage = $aiResponse['data'];
     }
 } catch (\Throwable $e) {
-    // No published page, fall through to legacy renderer
-}
-
-if ($aiPage !== null) {
-    // AI page exists — render the new template with SEO head tags injected.
-    // Variables consumed by includes/head.php:
-    //   $page_title       — used as <title> + og:title
-    //   $page_description — used as meta description + og:description
-    //   $page_image       — used as og:image (Phase 13a will populate this)
-    //   $page_url         — used as canonical + og:url
-    //   $page_type        — og:type (product for SEO)
-    $seo = $aiPage['seo'] ?? [];
-
-    $page_title       = $seo['meta_title'] ?? ($aiPage['compound'] . ' — Research Peptide');
-    $page_description = $seo['meta_description'] ?? ($aiPage['short_description'] ?? '');
-    $page_image       = $seo['og_image_url'] ?? null;
-    $page_url         = SHOP_URL . '/product?sku=' . urlencode($sku);
-    $page_type        = 'product';
-    $base_path        = '../';
-    $current_page     = 'shop';
-    ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <?php include __DIR__ . '/../includes/head.php'; ?>
-
-    <?php /* JSON-LD Product schema for rich Google results */ ?>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": <?= json_encode($aiPage['compound']) ?>,
-      "description": <?= json_encode($page_description) ?>,
-      "category": <?= json_encode($aiPage['category'] ?? '') ?>,
-      "brand": { "@type": "Brand", "name": "ClarityLabs USA" },
-      "url": <?= json_encode($page_url) ?>,
-      "offers": [
-      <?php $first = true; foreach (($aiPage['variants'] ?? []) as $v): if (!$first) echo ','; $first = false; ?>
-        {
-          "@type": "Offer",
-          "sku": <?= json_encode($v['sku']) ?>,
-          "name": <?= json_encode(($aiPage['compound'] ?? '') . ' ' . ($v['mg'] ?? '')) ?>,
-          "price": <?= json_encode((float) ($v['sale_price'] ?? 0)) ?>,
-          "priceCurrency": "USD",
-          "availability": <?= json_encode($v['in_stock'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock') ?>,
-          "url": <?= json_encode(SHOP_URL . '/product?sku=' . urlencode($v['sku'])) ?>
-        }
-      <?php endforeach; ?>
-      ]
-    }
-    </script>
-    </head>
-    <body>
-    <?php include __DIR__ . '/../includes/header.php'; ?>
-    <?php include __DIR__ . '/../includes/ai-product-template.php'; ?>
-    <?php include __DIR__ . '/../includes/footer.php'; ?>
-    </body>
-    </html>
-    <?php
-    exit;
+    // No published page — silent fall-through to the legacy flow below
 }
 
 // Restrict the local $products marketing catalog to items that are currently
@@ -273,6 +217,77 @@ if ($apiProduct) {
 $page_title = $product['name'];
 $page_description = $product['short_desc'] ?? $product['short_description'] ?? '';
 $current_page = 'shop';
+
+// PHASE 12c: If a published AI page exists, merge its content into the
+// $product array AFTER the legacy lookup has populated everything else.
+// The hero (image, size selector, cart, trust badges) keeps its existing
+// shape — we only override the copy fields used by the sections below
+// the hero (Why, Designed For, Protocol Context, Research Profile).
+if ($aiPage !== null) {
+    $hero      = $aiPage['hero']      ?? [];
+    $whyCards  = $aiPage['why_cards'] ?? [];
+    $audience  = $aiPage['audience']  ?? [];
+    $research  = $aiPage['research_overview'] ?? '';
+    $brandPhil = $aiPage['brand_philosophy']  ?? '';
+    $seo       = $aiPage['seo']       ?? [];
+
+    // ── SEO meta tags (head.php consumes $page_title/$page_description) ──
+    if (!empty($seo['meta_title']))       $page_title       = $seo['meta_title'];
+    if (!empty($seo['meta_description'])) $page_description = $seo['meta_description'];
+    if (!empty($seo['og_image_url']))     $page_image       = $seo['og_image_url'];
+
+    // ── Hero copy enhancements (does NOT touch image / sizes / cart) ──
+    if (!empty($hero['title']))         $product['name']     = $hero['title'];
+    if (!empty($hero['subtitle']))      $product['tagline']  = $hero['subtitle'];
+    if (!empty($hero['intro']))         $product['short_desc'] = $hero['intro'];
+    if (!empty($hero['category_label'])) $product['badge']    = $hero['category_label'];
+    if (!empty($hero['trust_bullets']) && is_array($hero['trust_bullets'])) {
+        $product['hero_checklist'] = $hero['trust_bullets'];
+    }
+
+    // ── "Why Researchers Choose This" section (4 cards) ──
+    if (!empty($whyCards) && is_array($whyCards)) {
+        $product['why_cards'] = array_map(function ($c) {
+            return [
+                'icon'  => '&#9678;',
+                'title' => $c['title']       ?? '',
+                'desc'  => $c['description'] ?? '',
+            ];
+        }, $whyCards);
+    }
+
+    // ── Research profile (the long text under the Why heading) ──
+    // Strip {{CALLOUT: ...}} tags since the legacy template doesn't render them
+    if (!empty($research)) {
+        $cleaned = preg_replace('/\{\{CALLOUT:.+?\}\}/s', '', $research);
+        $cleaned = trim(preg_replace('/\n\n+/', "\n\n", $cleaned));
+        $product['research_profile'] = $cleaned;
+    }
+
+    // ── "Designed For" section: numbered audience profiles ──
+    if (!empty($audience['profiles']) && is_array($audience['profiles'])) {
+        $product['designed_for_profiles'] = array_map(function ($p) {
+            return ['title' => $p, 'desc' => ''];
+        }, $audience['profiles']);
+        $product['designed_for_intro'] = $audience['intro'] ?? '';
+    }
+
+    // ── Protocol Context: split research_overview into paragraphs ──
+    if (!empty($research)) {
+        $cleaned = preg_replace('/\{\{CALLOUT:.+?\}\}/s', '', $research);
+        $paras = array_values(array_filter(array_map('trim', preg_split('/\n\n+/', $cleaned))));
+        if (!empty($paras)) {
+            $product['protocol_context'] = $paras;
+        }
+    }
+
+    // ── Brand philosophy: appended as a final paragraph in the same block ──
+    // (Legacy template has no dedicated brand_philosophy slot, so we tack it
+    //  onto protocol_context as a closing paragraph if present)
+    if (!empty($brandPhil) && !empty($product['protocol_context'])) {
+        $product['protocol_context'][] = $brandPhil;
+    }
+}
 
 // Build related products
 $related = [];
