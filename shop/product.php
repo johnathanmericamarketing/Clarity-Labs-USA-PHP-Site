@@ -269,12 +269,17 @@ if ($aiPage !== null) {
     }
 
     // ── designed_for_profiles: AI audience.profiles → array of {title,desc} ──
+    // Audit C1 fix: Claude returns profiles as plain strings per the blueprint.
+    // The template renders title as the visible heading + desc as the body text.
+    // Previously we put the string in desc (wrong) and used generic "Profile N"
+    // as the title, making it look bland. Now: string goes to title (the actual
+    // audience descriptor the customer reads), desc stays empty.
     if (!empty($audience['profiles']) && is_array($audience['profiles'])) {
         $product['designed_for_profiles'] = [];
         foreach ($audience['profiles'] as $i => $profile) {
             $product['designed_for_profiles'][] = [
-                'title' => 'Profile ' . ($i + 1),
-                'desc'  => is_array($profile) ? ($profile['title'] ?? '') : (string) $profile,
+                'title' => is_array($profile) ? ($profile['title'] ?? '') : (string) $profile,
+                'desc'  => is_array($profile) ? ($profile['desc'] ?? '') : '',
             ];
         }
     }

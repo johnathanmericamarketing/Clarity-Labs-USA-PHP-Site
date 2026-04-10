@@ -7,9 +7,13 @@ $base_path = '../../';
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/csrf.php';
+require_once __DIR__ . '/../../includes/access-guard.php';
 require_once __DIR__ . '/../../includes/api-client.php';
 
-clarity_session_start();
+// Audit C2: forgot-password.php had ZERO auth checks — anyone could
+// access it without age verification. Now enforces age gate (no login
+// required since the user is trying to recover their password).
+age_gate_only();
 
 $page_title = 'Reset Password';
 ?>
