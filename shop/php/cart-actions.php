@@ -44,7 +44,10 @@ switch ($action) {
         }
 
         $product = $productData['data'];
-        $price = (float) ($product['price'] ?? 0);
+        // price_per_vial is the customer-facing price (same as "Sale Price" on
+        // the product view). Falls back to sale_price → client-supplied price
+        // in case the API response shape changes.
+        $price = (float) ($product['price_per_vial'] ?? $product['sale_price'] ?? $product['price'] ?? 0);
 
         if ($price <= 0) {
             echo json_encode(['success' => false, 'error' => 'Product price is not available.']);
@@ -53,8 +56,8 @@ switch ($action) {
 
         // Use API values for name and size too, to prevent tampering
         $name     = $product['name'] ?? $name;
-        $size     = $product['size'] ?? $size;
-        $imageUrl = $product['image_url'] ?? $imageUrl;
+        $size     = $product['mg_specification'] ?? $product['size'] ?? $size;
+        $imageUrl = $product['primary_image'] ?? $product['image_url'] ?? $imageUrl;
 
         // Check stock availability
         $stockStatus = $product['stock_status'] ?? '';
