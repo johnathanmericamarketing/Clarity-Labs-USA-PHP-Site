@@ -42,6 +42,28 @@ if (!empty($customer['id']) || is_logged_in()) {
 }
 $items = cart_items();
 $subtotal = cart_subtotal();
+
+// Phase 14: Check if Bacteriostatic Water (WA10) is in the cart.
+// If not, fetch its product data for the checkout add-on upsell.
+$hasWater = false;
+$waterProduct = null;
+foreach ($items as $item) {
+    if (($item['sku'] ?? '') === 'WA10') {
+        $hasWater = true;
+        break;
+    }
+}
+if (!$hasWater) {
+    try {
+        $upsellApi = new ClarityApiClient();
+        $waterResponse = $upsellApi->getProduct('WA10');
+        if (!empty($waterResponse['data']) && ($waterResponse['data']['stock_status'] ?? '') !== 'Out of Stock') {
+            $waterProduct = $waterResponse['data'];
+        }
+    } catch (\Throwable $e) {
+        // Silent fail — upsell is optional, don't break checkout
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -417,6 +439,105 @@ $subtotal = cart_subtotal();
                   Your order will be processed and shipped once payment is confirmed. Payment details are included in the invoice.
                 </p>
               </div>
+
+              <?php if (!$hasWater && $waterProduct): ?>
+              <!-- Phase 14: Bacteriostatic Water Add-On Upsell -->
+              <div id="upsell-water" style="margin: 24px 0; padding: 20px; border-radius: 12px; border: 2px solid #2A9D8F; background: linear-gradient(135deg, rgba(42,157,143,0.06), rgba(11,30,63,0.03));">
+                <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                  <?php
+                    $waterImg = $waterProduct['primary_image'] ?? '';
+                    $waterPrice = (float) ($waterProduct['sale_price'] ?? $waterProduct['price_per_vial'] ?? 0);
+                    $waterName = htmlspecialchars($waterProduct['name'] ?? 'Bacteriostatic Water');
+                    $waterMg = htmlspecialchars($waterProduct['mg_specification'] ?? $waterProduct['size'] ?? '');
+                  ?>
+                  <?php if ($waterImg): ?>
+                    <img src="<?= htmlspecialchars($waterImg) ?>" alt="Bacteriostatic Water" style="width: 72px; height: 72px; border-radius: 10px; object-fit: cover; border: 1px solid #E4E6EB; flex-shrink: 0;">
+                  <?php else: ?>
+                    <div style="width: 72px; height: 72px; border-radius: 10px; background: #F8F9FA; border: 1px solid #E4E6EB; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                      <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: #9BA3B5; text-transform: uppercase;">WA10</span>
+                    </div>
+                  <?php endif; ?>
+                  <div style="flex: 1; min-width: 200px;">
+                    <div style="font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #2A9D8F; font-weight: 600; margin-bottom: 4px;">Complete Your Order</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #0B1E3F; margin-bottom: 4px;"><?= $waterName ?></div>
+                    <div style="font-size: 13px; color: #6B7185; line-height: 1.4;">Essential for reconstitution. Sterile bacteriostatic water for research use.</div>
+                  </div>
+                  <div style="text-align: center; flex-shrink: 0;">
+                    <div style="font-family: 'DM Serif Display', serif; font-size: 24px; color: #0B1E3F; margin-bottom: 8px;">$<?= number_format($waterPrice, 2) ?></div>
+                    <button type="button" id="upsell-water-btn" onclick="addUpsellToCart()" style="padding: 10px 24px; background: #0B1E3F; color: #fff; border: none; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; font-weight: 600; transition: background 0.15s;">
+                      Add to Order
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <script>
+              // Phase 14: Upsell AJAX add-to-cart (no page reload)
+              var upsellData = {
+                sku: 'WA10',
+                name: <?= json_encode($waterProduct['name'] ?? 'Bacteriostatic Water') ?>,
+                size: <?= json_encode($waterProduct['mg_specification'] ?? '') ?>,
+                price: <?= json_encode($waterPrice) ?>,
+              };
+
+              async function addUpsellToCart() {
+                var btn = document.getElementById('upsell-water-btn');
+                btn.textContent = 'Adding...';
+                btn.disabled = true;
+
+                try {
+                  var fd = new FormData();
+                  fd.append('_csrf_token', '<?= csrf_token() ?>');
+                  fd.append('sku', upsellData.sku);
+                  fd.append('name', upsellData.name);
+                  fd.append('size', upsellData.size);
+                  fd.append('price', upsellData.price);
+                  fd.append('qty', 1);
+                  fd.append('image_url', <?= json_encode($waterImg) ?>);
+
+                  var res = await fetch('<?= SHOP_URL ?>/php/cart-actions.php?action=add', {
+                    method: 'POST',
+                    body: fd,
+                  });
+                  var data = await res.json();
+
+                  if (data.success) {
+                    // Success — update the UI
+                    var card = document.getElementById('upsell-water');
+                    card.innerHTML = '<div style="padding: 16px; text-align: center; color: #2A9D8F; font-weight: 700; font-size: 14px;">&#10003; Bacteriostatic Water added to your order</div>';
+                    card.style.borderColor = '#22c55e';
+                    card.style.background = 'rgba(34,197,94,0.06)';
+
+                    // Update the order total in the sidebar + button
+                    if (typeof updateTotal === 'function') updateTotal();
+                    var totalBtn = document.getElementById('order-total-btn');
+                    if (totalBtn && data.subtotal) {
+                      totalBtn.textContent = parseFloat(data.subtotal).toFixed(2);
+                    }
+
+                    // Fade out after 3 seconds
+                    setTimeout(function() {
+                      card.style.transition = 'opacity 0.5s, max-height 0.5s';
+                      card.style.opacity = '0';
+                      card.style.maxHeight = '0';
+                      card.style.overflow = 'hidden';
+                      card.style.padding = '0';
+                      card.style.margin = '0';
+                      card.style.border = 'none';
+                    }, 3000);
+                  } else {
+                    btn.textContent = 'Add to Order';
+                    btn.disabled = false;
+                    alert(data.error || 'Could not add to cart. Please try again.');
+                  }
+                } catch (err) {
+                  btn.textContent = 'Add to Order';
+                  btn.disabled = false;
+                  alert('Network error. Please try again.');
+                }
+              }
+              </script>
+              <?php endif; ?>
 
               <div class="checkout-form__checkbox" style="display: flex; gap: 10px; margin: 20px 0;">
                 <input type="checkbox" id="agree-terms" required>
