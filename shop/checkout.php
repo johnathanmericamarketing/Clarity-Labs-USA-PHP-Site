@@ -517,26 +517,36 @@ if (!$hasWater) {
                     card.style.background = 'rgba(34,197,94,0.06)';
 
                     // Add the new line item to the Order Summary sidebar
-                    var itemsContainer = document.querySelector('.checkout-summary__item:last-of-type');
-                    if (itemsContainer) {
+                    var summaryItems = document.getElementById('summary-items');
+                    if (summaryItems) {
                       var newItem = document.createElement('div');
                       newItem.className = 'checkout-summary__item';
                       newItem.innerHTML = '<div><div class="name">Bacteriostatic Water <span class="qty">&times;' + qty + '</span></div></div><div>$' + (upsellData.price * qty).toFixed(2) + '</div>';
-                      itemsContainer.insertAdjacentElement('afterend', newItem);
+                      summaryItems.appendChild(newItem);
                     }
 
                     // Update subtotal + total in sidebar + Place Order button
                     var newSubtotal = data.subtotal ? parseFloat(data.subtotal) : 0;
-                    var totalBtn = document.getElementById('order-total-btn');
-                    var summaryTotal = document.getElementById('summary-total');
-                    var summarySubtotal = document.querySelector('.checkout-summary__row span:last-child');
+                    if (newSubtotal > 0) {
+                      // Update Place Order button
+                      var totalBtn = document.getElementById('order-total-btn');
+                      if (totalBtn) totalBtn.textContent = newSubtotal.toFixed(2);
 
-                    if (totalBtn && newSubtotal > 0) totalBtn.textContent = newSubtotal.toFixed(2);
-                    if (summaryTotal && newSubtotal > 0) summaryTotal.textContent = '$' + newSubtotal.toFixed(2);
+                      // Update sidebar Total
+                      var summaryTotal = document.getElementById('summary-total');
+                      if (summaryTotal) summaryTotal.textContent = '$' + newSubtotal.toFixed(2);
+
+                      // Update sidebar Subtotal (first .checkout-summary__row's last span)
+                      var subtotalRows = document.querySelectorAll('.checkout-summary__row');
+                      if (subtotalRows[0]) {
+                        var subtotalSpan = subtotalRows[0].querySelector('span:last-child');
+                        if (subtotalSpan) subtotalSpan.textContent = '$' + newSubtotal.toFixed(2);
+                      }
+                    }
 
                     // Update cart badge count
                     var badge = document.querySelector('.cart-count');
-                    if (badge && data.cart_count) { badge.textContent = data.cart_count; }
+                    if (badge && data.cart_count) { badge.textContent = data.cart_count; badge.style.display = 'inline-flex'; }
 
                     // Fade out upsell card after 3 seconds
                     setTimeout(function() {
@@ -613,6 +623,7 @@ if (!$hasWater) {
 
             <div class="free-shipping-banner">✓ Free Standard Shipping</div>
 
+            <div id="summary-items">
             <?php foreach ($items as $item): ?>
               <div class="checkout-summary__item">
                 <div>
@@ -621,6 +632,7 @@ if (!$hasWater) {
                 <div>$<?= number_format($item['price'] * $item['qty'], 2) ?></div>
               </div>
             <?php endforeach; ?>
+            </div>
 
             <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule);">
               <div class="checkout-summary__row">
