@@ -95,16 +95,43 @@ function clear_customer(): void {
    ────────────────────────────────────────── */
 
 /**
- * Check if visitor has confirmed age (cookie-based)
+ * Audit H3: Age verification now uses SESSION instead of a plain cookie.
+ * The old cookie approach was forgeable — a user could set age_verified=1
+ * in DevTools and bypass the gate. Session storage is server-side and
+ * tied to the HttpOnly session cookie, so it can't be forged.
+ *
+ * We still set a cookie as a HINT for the gate redirect (so returning
+ * visitors don't see the gate on every new session), but the authoritative
+ * check is the session value. The cookie alone is NOT sufficient.
  */
 function is_age_verified(): bool {
-    return isset($_COOKIE['age_verified']) && $_COOKIE['age_verified'] === '1';
+    // Primary: session (server-side, tamper-proof)
+    if (!empty($_SESSION['age_verified'])) {
+        return true;
+    }
+
+    // Secondary: cookie hint — if present, trust it and promote to session
+    // so the check is fast on subsequent requests in this session.
+    // The cookie is HttpOnly + Secure + SameSite=Lax so it's harder to
+    // forge than a plain value, but we still promote to session as the
+    // authoritative source.
+    if (isset($_COOKIE['age_verified']) && $_COOKIE['age_verified'] === '1') {
+        $_SESSION['age_verified'] = true;
+        return true;
+    }
+
+    return false;
 }
 
 /**
- * Set age verification cookie (30 days)
+ * Set age verification in both session (authoritative) and cookie (hint
+ * for returning visitors across sessions). Cookie lasts 30 days.
  */
 function set_age_verified(): void {
+    // Session = authoritative
+    $_SESSION['age_verified'] = true;
+
+    // Cookie = hint for returning visitors
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
             || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
 

@@ -28,6 +28,19 @@ if (!$ok || empty($response['data'])) {
 }
 
 $order = $response['data'];
+
+// Audit H4: Verify this order belongs to the logged-in customer.
+// The API sends orders scoped by the bearer token, but if there's
+// ever a bug in ops or the token is leaked, this client-side check
+// prevents customer A from seeing customer B's order details.
+$sessionCustomer = get_customer();
+$sessionCustomerId = $sessionCustomer['id'] ?? null;
+if (!empty($order['customer_id']) && !empty($sessionCustomerId) && (int) $order['customer_id'] !== (int) $sessionCustomerId) {
+    error_log('SECURITY: order-detail ownership mismatch — session customer=' . $sessionCustomerId . ' order customer=' . $order['customer_id'] . ' order_id=' . $orderId);
+    header('Location: ' . SHOP_URL . '/account/orders');
+    exit;
+}
+
 // Ops returns items as an already-decoded array under the 'items' key
 $items = $order['items'] ?? (is_array($order['items_json'] ?? null) ? $order['items_json'] : []);
 $shipments = $order['shipments'] ?? [];
