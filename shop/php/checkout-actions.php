@@ -105,12 +105,16 @@ switch ($action) {
 
         $api = new ClarityApiClient();
 
-        // First validate items
+        // Audit M14: Validate cart items against ops API immediately before
+        // creating the order. The ops store() endpoint also re-validates with
+        // row locking (belt + suspenders), but this client-side check gives
+        // the customer a clear error message instead of a generic 500 if
+        // stock changed between page load and checkout submission.
         $validation = $api->validateOrder(cart_items_for_api());
         if (empty($validation['success']) || empty($validation['valid'])) {
             echo json_encode([
                 'success' => false,
-                'error'   => $validation['message'] ?? 'Some items in your cart are no longer available.',
+                'error'   => $validation['message'] ?? 'Some items in your cart are no longer available. Please refresh and try again.',
             ]);
             exit;
         }
