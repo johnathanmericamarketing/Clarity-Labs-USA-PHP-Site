@@ -256,23 +256,28 @@ if ($aiPage !== null) {
         }, $whyCards);
     }
 
-    // ── Research profile (the long text under the Why heading) ──
-    // Strip {{CALLOUT: ...}} tags since the legacy template doesn't render them
-    if (!empty($research)) {
-        $cleaned = preg_replace('/\{\{CALLOUT:.+?\}\}/s', '', $research);
-        $cleaned = trim(preg_replace('/\n\n+/', "\n\n", $cleaned));
-        $product['research_profile'] = $cleaned;
+    // ── Research Profile (the SHORT intro that goes in the Why section
+    //    header-right column on desktop). Use the hero subtitle since it's
+    //    a punchy 1-line tagline. Falls back to short_description from DB.
+    if (!empty($hero['subtitle'])) {
+        $product['research_profile'] = $hero['subtitle'];
+    } elseif (!empty($aiPage['short_description'])) {
+        $product['research_profile'] = $aiPage['short_description'];
     }
 
-    // ── "Designed For" section: numbered audience profiles ──
+    // ── "Designed For" section: numbered audience profiles + intro ──
     if (!empty($audience['profiles']) && is_array($audience['profiles'])) {
         $product['designed_for_profiles'] = array_map(function ($p) {
             return ['title' => $p, 'desc' => ''];
         }, $audience['profiles']);
-        $product['designed_for_intro'] = $audience['intro'] ?? '';
+    }
+    if (!empty($audience['intro'])) {
+        $product['designed_for_intro'] = $audience['intro'];
     }
 
-    // ── Protocol Context: split research_overview into paragraphs ──
+    // ── Protocol Context (dark navy section): the LONG research overview
+    //    split into paragraphs. Strip any {{CALLOUT: ...}} markers since
+    //    the legacy template renders plain paragraphs.
     if (!empty($research)) {
         $cleaned = preg_replace('/\{\{CALLOUT:.+?\}\}/s', '', $research);
         $paras = array_values(array_filter(array_map('trim', preg_split('/\n\n+/', $cleaned))));
@@ -281,11 +286,12 @@ if ($aiPage !== null) {
         }
     }
 
-    // ── Brand philosophy: appended as a final paragraph in the same block ──
-    // (Legacy template has no dedicated brand_philosophy slot, so we tack it
-    //  onto protocol_context as a closing paragraph if present)
-    if (!empty($brandPhil) && !empty($product['protocol_context'])) {
-        $product['protocol_context'][] = $brandPhil;
+    // ── Brand philosophy gets the dedicated sidebar callout slot in the
+    //    Protocol Context section instead of being appended to paragraphs.
+    //    The new 2-column layout in product-template.php fills the
+    //    previously-empty right column with this callout.
+    if (!empty($brandPhil)) {
+        $product['protocol_context_callout'] = $brandPhil;
     }
 }
 

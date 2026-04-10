@@ -355,10 +355,18 @@ if (!empty($product['sizes'][0]['primary_image'])) {
     <p class="section-label" style="color:var(--green-rule);">Protocol Context</p>
     <h2 style="color:var(--white);" class="fade-up">Research Protocol Considerations</h2>
     <hr class="teal-rule teal-rule--wide" style="margin-bottom:32px;">
-    <div class="protocol-context__content">
-      <?php foreach ($product['protocol_context'] as $i => $para): ?>
-      <p class="fade-up stagger-<?php echo $i + 1; ?>"><?php echo htmlspecialchars($para); ?></p>
-      <?php endforeach; ?>
+    <div class="protocol-context__layout">
+      <div class="protocol-context__content">
+        <?php foreach ($product['protocol_context'] as $i => $para): ?>
+        <p class="fade-up stagger-<?php echo $i + 1; ?>"><?php echo htmlspecialchars($para); ?></p>
+        <?php endforeach; ?>
+      </div>
+      <?php if (!empty($product['protocol_context_callout'])): ?>
+      <aside class="protocol-context__callout fade-up">
+        <div class="protocol-context__callout-label">Research Note</div>
+        <p class="protocol-context__callout-text"><?php echo htmlspecialchars($product['protocol_context_callout']); ?></p>
+      </aside>
+      <?php endif; ?>
     </div>
   </div>
 </section>

@@ -1451,9 +1451,16 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   margin: 0 auto;
   padding: 80px 40px;
 }
-.protocol-context__content {
-  max-width: 760px;
+.protocol-context__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 56px;
+  align-items: start;
 }
+.protocol-context__layout:has(> .protocol-context__content:only-child) {
+  grid-template-columns: minmax(0, 760px);
+}
+.protocol-context__content { max-width: 760px; }
 .protocol-context__content p {
   font-size: 15px;
   font-weight: 300;
@@ -1462,6 +1469,36 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   margin-bottom: 20px;
 }
 .protocol-context__content p:last-child { margin-bottom: 0; }
+.protocol-context__callout {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-left: 3px solid var(--accent-teal, #2A9D8F);
+  border-radius: 8px;
+  padding: 28px 26px;
+  position: sticky;
+  top: 120px;
+}
+.protocol-context__callout-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-teal, #2A9D8F);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.protocol-context__callout-text {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.8;
+  margin: 0;
+  font-style: italic;
+}
+@media (max-width: 900px) {
+  .protocol-context__layout { grid-template-columns: 1fr; gap: 32px; }
+  .protocol-context__callout { position: static; }
+}
 
 /* Brand Values */
 .brand-values { background: var(--gray-50); border-bottom: 1px solid var(--rule); }
