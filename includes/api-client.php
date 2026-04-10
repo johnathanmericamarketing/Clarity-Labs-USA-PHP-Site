@@ -25,7 +25,7 @@ class ClarityApiClient {
         $this->timeout = 10; // seconds
         $this->cacheDir = dirname(__DIR__) . '/cache';
         if (!is_dir($this->cacheDir)) {
-            @mkdir($this->cacheDir, 0755, true);
+            @mkdir($this->cacheDir, 0750, true); // Audit L11: tightened from 0755
         }
     }
 

@@ -8,6 +8,13 @@
      clarity_session_start();
    ============================================================ */
 
+// Audit L4: Security headers — prevent clickjacking + basic CSP
+if (!headers_sent()) {
+    header('X-Frame-Options: DENY');
+    header('X-Content-Type-Options: nosniff');
+    header("Content-Security-Policy: frame-ancestors 'none'");
+}
+
 /**
  * Start a secure session (call once per request)
  */
