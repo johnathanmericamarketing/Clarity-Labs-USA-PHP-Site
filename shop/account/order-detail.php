@@ -45,7 +45,8 @@ if (!empty($order['customer_id']) && !empty($sessionCustomerId) && (int) $order[
 $items = $order['items'] ?? (is_array($order['items_json'] ?? null) ? $order['items_json'] : []);
 $shipments = $order['shipments'] ?? [];
 
-$page_title = 'Order ' . ($order['order_number'] ?? '');
+// Security S6: htmlspecialchars prevents XSS if order_number contains malicious content
+$page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -8,11 +8,14 @@
      clarity_session_start();
    ============================================================ */
 
-// Audit L4: Security headers — prevent clickjacking + basic CSP
+// Audit L4 + Security S7: Hardening headers
 if (!headers_sent()) {
     header('X-Frame-Options: DENY');
     header('X-Content-Type-Options: nosniff');
     header("Content-Security-Policy: frame-ancestors 'none'");
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 }
 
 /**
@@ -85,6 +88,12 @@ function get_customer_name(): string {
  * Store customer data after login
  */
 function set_customer(array $customerData, string $token): void {
+    // Security S10: Regenerate session ID on login to prevent session fixation.
+    // An attacker who knows the pre-login session ID can't use it to hijack
+    // the authenticated session because the ID changes here.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true); // true = delete old session file
+    }
     $_SESSION['customer'] = $customerData;
     $_SESSION['customer_token'] = $token;
     $_SESSION['logged_in_at'] = time();
