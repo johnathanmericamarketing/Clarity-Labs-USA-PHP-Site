@@ -230,6 +230,16 @@ class ClarityApiClient {
     }
 
     /**
+     * Get the AI-generated PUBLISHED product page content for the
+     * compound this SKU belongs to. Cached 5 minutes. Returns 404
+     * silently if no published page exists — shop/product.php will
+     * fall back to the legacy hardcoded product-data.php.
+     */
+    public function getProductPage(string $sku): array {
+        return $this->getCached('/products/' . urlencode($sku) . '/page', [], 300);
+    }
+
+    /**
      * Check product stock availability
      */
     public function getProductAvailability(string $sku): array {

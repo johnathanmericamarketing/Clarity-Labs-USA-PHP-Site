@@ -35,6 +35,78 @@ $product = null;
 // First: try API
 $api = new ClarityApiClient();
 
+// PHASE 12c: Check for a PUBLISHED AI-generated page for this compound.
+// If one exists, we render a completely different template (the AI page)
+// and bypass the legacy product-data.php flow entirely.
+$aiPage = null;
+try {
+    $aiResponse = $api->getProductPage($sku);
+    if (($aiResponse['status'] ?? '') === 'ok' && !empty($aiResponse['data'])) {
+        $aiPage = $aiResponse['data'];
+    }
+} catch (\Throwable $e) {
+    // No published page, fall through to legacy renderer
+}
+
+if ($aiPage !== null) {
+    // AI page exists — render the new template with SEO head tags injected.
+    // Variables consumed by includes/head.php:
+    //   $page_title       — used as <title> + og:title
+    //   $page_description — used as meta description + og:description
+    //   $page_image       — used as og:image (Phase 13a will populate this)
+    //   $page_url         — used as canonical + og:url
+    //   $page_type        — og:type (product for SEO)
+    $seo = $aiPage['seo'] ?? [];
+
+    $page_title       = $seo['meta_title'] ?? ($aiPage['compound'] . ' — Research Peptide');
+    $page_description = $seo['meta_description'] ?? ($aiPage['short_description'] ?? '');
+    $page_image       = $seo['og_image_url'] ?? null;
+    $page_url         = SHOP_URL . '/product?sku=' . urlencode($sku);
+    $page_type        = 'product';
+    $base_path        = '../';
+    $current_page     = 'shop';
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <?php include __DIR__ . '/../includes/head.php'; ?>
+
+    <?php /* JSON-LD Product schema for rich Google results */ ?>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": <?= json_encode($aiPage['compound']) ?>,
+      "description": <?= json_encode($page_description) ?>,
+      "category": <?= json_encode($aiPage['category'] ?? '') ?>,
+      "brand": { "@type": "Brand", "name": "ClarityLabs USA" },
+      "url": <?= json_encode($page_url) ?>,
+      "offers": [
+      <?php $first = true; foreach (($aiPage['variants'] ?? []) as $v): if (!$first) echo ','; $first = false; ?>
+        {
+          "@type": "Offer",
+          "sku": <?= json_encode($v['sku']) ?>,
+          "name": <?= json_encode(($aiPage['compound'] ?? '') . ' ' . ($v['mg'] ?? '')) ?>,
+          "price": <?= json_encode((float) ($v['sale_price'] ?? 0)) ?>,
+          "priceCurrency": "USD",
+          "availability": <?= json_encode($v['in_stock'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock') ?>,
+          "url": <?= json_encode(SHOP_URL . '/product?sku=' . urlencode($v['sku'])) ?>
+        }
+      <?php endforeach; ?>
+      ]
+    }
+    </script>
+    </head>
+    <body>
+    <?php include __DIR__ . '/../includes/header.php'; ?>
+    <?php include __DIR__ . '/../includes/ai-product-template.php'; ?>
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
 // Restrict the local $products marketing catalog to items that are currently
 // visible in the API. This is what makes Test Mode work on the product detail
 // page: when Test Mode is ON the API only returns SUP-TEST products, so no
