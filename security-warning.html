@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Denied</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;600;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #0B1E3F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+    .container {
+      text-align: center;
+      max-width: 600px;
+      padding: 40px;
+    }
+    .eye {
+      font-size: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    h1 {
+      font-family: 'DM Mono', monospace;
+      font-size: 28px;
+      color: #ff4444;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+      text-shadow: 0 0 20px rgba(255,68,68,0.5);
+    }
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: #2A9D8F;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 32px;
+    }
+    .message {
+      font-size: 16px;
+      color: rgba(255,255,255,0.70);
+      line-height: 1.8;
+      margin-bottom: 32px;
+    }
+    .ip-box {
+      background: rgba(255,68,68,0.08);
+      border: 1px solid rgba(255,68,68,0.25);
+      border-radius: 10px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+    }
+    .ip-box .label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255,68,68,0.70);
+      margin-bottom: 6px;
+    }
+    .ip-box .value {
+      font-family: 'DM Mono', monospace;
+      font-size: 18px;
+      color: #ff4444;
+      font-weight: 600;
+    }
+    .warning {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.8;
+    }
+    .scan-line {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ff4444, transparent);
+      animation: scan 3s linear infinite;
+    }
+    @keyframes scan {
+      0% { top: 0; }
+      100% { top: 100vh; }
+    }
+    .grid {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image:
+        linear-gradient(rgba(42,157,143,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(42,157,143,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="scan-line"></div>
+  <div class="container">
+    <div class="eye">👁️</div>
+    <h1>You Are Being Watched</h1>
+    <div class="subtitle">Unauthorized Access Attempt Detected</div>
+    <div class="message">
+      This access attempt has been logged and flagged for review.<br>
+      All connection details have been recorded.
+    </div>
+    <div class="ip-box">
+      <div class="label">Your Connection Has Been Logged</div>
+      <div class="value">WE SEE YOU</div>
+    </div>
+    <div class="warning">
+      ClarityLabs USA Security Monitoring<br>
+      All unauthorized access attempts are tracked and reported
+    </div>
+  </div>
+</body>
+</html>
