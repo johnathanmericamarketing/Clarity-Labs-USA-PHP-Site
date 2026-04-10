@@ -516,14 +516,29 @@ if (!$hasWater) {
                     card.style.borderColor = '#22c55e';
                     card.style.background = 'rgba(34,197,94,0.06)';
 
-                    // Update the order total in the sidebar + button
-                    if (typeof updateTotal === 'function') updateTotal();
-                    var totalBtn = document.getElementById('order-total-btn');
-                    if (totalBtn && data.subtotal) {
-                      totalBtn.textContent = parseFloat(data.subtotal).toFixed(2);
+                    // Add the new line item to the Order Summary sidebar
+                    var itemsContainer = document.querySelector('.checkout-summary__item:last-of-type');
+                    if (itemsContainer) {
+                      var newItem = document.createElement('div');
+                      newItem.className = 'checkout-summary__item';
+                      newItem.innerHTML = '<div><div class="name">Bacteriostatic Water <span class="qty">&times;' + qty + '</span></div></div><div>$' + (upsellData.price * qty).toFixed(2) + '</div>';
+                      itemsContainer.insertAdjacentElement('afterend', newItem);
                     }
 
-                    // Fade out after 3 seconds
+                    // Update subtotal + total in sidebar + Place Order button
+                    var newSubtotal = data.subtotal ? parseFloat(data.subtotal) : 0;
+                    var totalBtn = document.getElementById('order-total-btn');
+                    var summaryTotal = document.getElementById('summary-total');
+                    var summarySubtotal = document.querySelector('.checkout-summary__row span:last-child');
+
+                    if (totalBtn && newSubtotal > 0) totalBtn.textContent = newSubtotal.toFixed(2);
+                    if (summaryTotal && newSubtotal > 0) summaryTotal.textContent = '$' + newSubtotal.toFixed(2);
+
+                    // Update cart badge count
+                    var badge = document.querySelector('.cart-count');
+                    if (badge && data.cart_count) { badge.textContent = data.cart_count; }
+
+                    // Fade out upsell card after 3 seconds
                     setTimeout(function() {
                       card.style.transition = 'opacity 0.5s, max-height 0.5s';
                       card.style.opacity = '0';
