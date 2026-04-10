@@ -218,34 +218,33 @@ $page_title = $product['name'];
 $page_description = $product['short_desc'] ?? $product['short_description'] ?? '';
 $current_page = 'shop';
 
-// PHASE 12c: If a published AI page exists, merge its content into the
-// $product array AFTER the legacy lookup has populated everything else.
-// The hero (image, size selector, cart, trust badges) keeps its existing
-// shape — we only override the copy fields used by the sections below
-// the hero (Why, Designed For, Protocol Context, Research Profile).
+// PHASE 12c: If a published AI page exists, map its content into the
+// EXACT field shape that products/product-template.php expects (same
+// shape as includes/product-data.php uses for hand-built products like
+// Retatrutide). The existing template then renders it identically — no
+// custom layout, no template modifications, just a data swap.
 if ($aiPage !== null) {
-    $hero      = $aiPage['hero']      ?? [];
-    $whyCards  = $aiPage['why_cards'] ?? [];
-    $audience  = $aiPage['audience']  ?? [];
+    $hero      = $aiPage['hero']              ?? [];
+    $whyCards  = $aiPage['why_cards']         ?? [];
+    $audience  = $aiPage['audience']          ?? ['intro' => '', 'profiles' => []];
     $research  = $aiPage['research_overview'] ?? '';
     $brandPhil = $aiPage['brand_philosophy']  ?? '';
-    $seo       = $aiPage['seo']       ?? [];
+    $disclaim  = $aiPage['disclaimer']        ?? '';
+    $seo       = $aiPage['seo']               ?? [];
 
-    // ── SEO meta tags (head.php consumes $page_title/$page_description) ──
+    // ── SEO head tag overrides ──
     if (!empty($seo['meta_title']))       $page_title       = $seo['meta_title'];
     if (!empty($seo['meta_description'])) $page_description = $seo['meta_description'];
     if (!empty($seo['og_image_url']))     $page_image       = $seo['og_image_url'];
 
-    // ── Hero copy enhancements (does NOT touch image / sizes / cart) ──
-    if (!empty($hero['title']))         $product['name']     = $hero['title'];
-    if (!empty($hero['subtitle']))      $product['tagline']  = $hero['subtitle'];
-    if (!empty($hero['intro']))         $product['short_desc'] = $hero['intro'];
+    // ── Hero (image/sizes/cart untouched) ──
+    if (!empty($hero['title']))          $product['name']     = $hero['title'];
+    if (!empty($hero['subtitle']))       $product['tagline']  = $hero['subtitle'];
+    if (!empty($hero['intro']))          $product['short_desc'] = $hero['intro'];
     if (!empty($hero['category_label'])) $product['badge']    = $hero['category_label'];
-    if (!empty($hero['trust_bullets']) && is_array($hero['trust_bullets'])) {
-        $product['hero_checklist'] = $hero['trust_bullets'];
-    }
+    if (!empty($hero['intro']))          $product['hero_long_desc'] = $hero['intro'];
 
-    // ── "Why Researchers Choose This" section (4 cards) ──
+    // ── why_cards: 4 cards in the existing shape ──
     if (!empty($whyCards) && is_array($whyCards)) {
         $product['why_cards'] = array_map(function ($c) {
             return [
@@ -256,42 +255,58 @@ if ($aiPage !== null) {
         }, $whyCards);
     }
 
-    // ── Research Profile (the SHORT intro that goes in the Why section
-    //    header-right column on desktop). Use the hero subtitle since it's
-    //    a punchy 1-line tagline. Falls back to short_description from DB.
-    if (!empty($hero['subtitle'])) {
-        $product['research_profile'] = $hero['subtitle'];
-    } elseif (!empty($aiPage['short_description'])) {
-        $product['research_profile'] = $aiPage['short_description'];
+    // ── research_apps: same shape, reuses why_cards as the source so the
+    //    "Areas of Active Study" section gets populated even though the AI
+    //    blueprint doesn't have a separate research_apps section ──
+    if (!empty($product['why_cards'])) {
+        $product['research_apps_intro'] = $hero['subtitle'] ?? '';
+        $product['research_apps'] = array_map(function ($c) {
+            return [
+                'title' => $c['title'] ?? '',
+                'desc'  => $c['desc']  ?? '',
+            ];
+        }, $product['why_cards']);
     }
 
-    // ── "Designed For" section: numbered audience profiles + intro ──
+    // ── designed_for_profiles: AI audience.profiles → array of {title,desc} ──
     if (!empty($audience['profiles']) && is_array($audience['profiles'])) {
-        $product['designed_for_profiles'] = array_map(function ($p) {
-            return ['title' => $p, 'desc' => ''];
-        }, $audience['profiles']);
+        $product['designed_for_profiles'] = [];
+        foreach ($audience['profiles'] as $i => $profile) {
+            $product['designed_for_profiles'][] = [
+                'title' => 'Profile ' . ($i + 1),
+                'desc'  => is_array($profile) ? ($profile['title'] ?? '') : (string) $profile,
+            ];
+        }
     }
     if (!empty($audience['intro'])) {
         $product['designed_for_intro'] = $audience['intro'];
     }
 
-    // ── Protocol Context (dark navy section): the LONG research overview
-    //    split into paragraphs. Strip any {{CALLOUT: ...}} markers since
-    //    the legacy template renders plain paragraphs.
+    // ── research_overview: AI long text split into paragraphs (template
+    //    expects an ARRAY of paragraph strings) ──
     if (!empty($research)) {
-        $cleaned = preg_replace('/\{\{CALLOUT:.+?\}\}/s', '', $research);
+        $cleaned = trim(preg_replace('/\{\{CALLOUT:.+?\}\}/s', '', $research));
         $paras = array_values(array_filter(array_map('trim', preg_split('/\n\n+/', $cleaned))));
         if (!empty($paras)) {
-            $product['protocol_context'] = $paras;
+            $product['research_overview'] = $paras;
+            $product['protocol_context']  = $paras; // legacy alias for the same section
         }
     }
 
-    // ── Brand philosophy gets the dedicated sidebar callout slot in the
-    //    Protocol Context section instead of being appended to paragraphs.
-    //    The new 2-column layout in product-template.php fills the
-    //    previously-empty right column with this callout.
+    // ── brand_values: convert AI brand_philosophy into a 1-card brand_values
+    //    array so the existing brand-values section renders ──
     if (!empty($brandPhil)) {
-        $product['protocol_context_callout'] = $brandPhil;
+        $product['brand_values'] = [
+            [
+                'title' => 'Clarity, Confidence, Simplicity',
+                'desc'  => $brandPhil,
+            ],
+        ];
+    }
+
+    // research_profile (the SHORT tagline in the Why section header-right)
+    if (!empty($hero['subtitle'])) {
+        $product['research_profile'] = $hero['subtitle'];
     }
 }
 
