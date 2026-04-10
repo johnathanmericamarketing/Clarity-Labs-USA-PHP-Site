@@ -446,7 +446,7 @@ if (!$hasWater) {
                 <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
                   <?php
                     $waterImg = $waterProduct['primary_image'] ?? '';
-                    $waterPrice = (float) ($waterProduct['sale_price'] ?? $waterProduct['price_per_vial'] ?? 0);
+                    $waterPrice = (float) ($waterProduct['price_per_vial'] ?? $waterProduct['sale_price'] ?? 0);
                     $waterName = htmlspecialchars($waterProduct['name'] ?? 'Bacteriostatic Water');
                     $waterMg = htmlspecialchars($waterProduct['mg_specification'] ?? $waterProduct['size'] ?? '');
                   ?>
@@ -463,8 +463,12 @@ if (!$hasWater) {
                     <div style="font-size: 13px; color: #6B7185; line-height: 1.4;">Essential for reconstitution. Sterile bacteriostatic water for research use.</div>
                   </div>
                   <div style="text-align: center; flex-shrink: 0;">
-                    <div style="font-family: 'DM Serif Display', serif; font-size: 24px; color: #0B1E3F; margin-bottom: 8px;">$<?= number_format($waterPrice, 2) ?></div>
-                    <button type="button" id="upsell-water-btn" onclick="addUpsellToCart()" style="padding: 10px 24px; background: #0B1E3F; color: #fff; border: none; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; font-weight: 600; transition: background 0.15s;">
+                    <div style="font-family: 'DM Serif Display', serif; font-size: 24px; color: #0B1E3F; margin-bottom: 4px;">$<?= number_format($waterPrice, 2) ?><span style="font-size: 12px; color: #6B7185; font-family: Inter, sans-serif;"> each</span></div>
+                    <div style="display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 10px;">
+                      <label style="font-size: 11px; color: #6B7185; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.5px;">Qty:</label>
+                      <input type="number" id="upsell-water-qty" value="1" min="1" max="10" style="width: 52px; padding: 6px 8px; border: 1px solid #E4E6EB; border-radius: 6px; text-align: center; font-size: 14px; font-weight: 700; color: #0B1E3F;">
+                    </div>
+                    <button type="button" id="upsell-water-btn" onclick="addUpsellToCart()" style="padding: 10px 24px; background: #0B1E3F; color: #fff; border: none; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; font-weight: 600; transition: background 0.15s; width: 100%;">
                       Add to Order
                     </button>
                   </div>
@@ -482,6 +486,10 @@ if (!$hasWater) {
 
               async function addUpsellToCart() {
                 var btn = document.getElementById('upsell-water-btn');
+                var qtyInput = document.getElementById('upsell-water-qty');
+                var qty = Math.max(1, Math.min(10, parseInt(qtyInput.value) || 1));
+                qtyInput.value = qty; // normalize
+
                 btn.textContent = 'Adding...';
                 btn.disabled = true;
 
@@ -492,7 +500,7 @@ if (!$hasWater) {
                   fd.append('name', upsellData.name);
                   fd.append('size', upsellData.size);
                   fd.append('price', upsellData.price);
-                  fd.append('qty', 1);
+                  fd.append('qty', qty);
                   fd.append('image_url', <?= json_encode($waterImg) ?>);
 
                   var res = await fetch('<?= SHOP_URL ?>/php/cart-actions.php?action=add', {
@@ -504,7 +512,7 @@ if (!$hasWater) {
                   if (data.success) {
                     // Success — update the UI
                     var card = document.getElementById('upsell-water');
-                    card.innerHTML = '<div style="padding: 16px; text-align: center; color: #2A9D8F; font-weight: 700; font-size: 14px;">&#10003; Bacteriostatic Water added to your order</div>';
+                    card.innerHTML = '<div style="padding: 16px; text-align: center; color: #2A9D8F; font-weight: 700; font-size: 14px;">&#10003; ' + qty + 'x Bacteriostatic Water added to your order</div>';
                     card.style.borderColor = '#22c55e';
                     card.style.background = 'rgba(34,197,94,0.06)';
 
