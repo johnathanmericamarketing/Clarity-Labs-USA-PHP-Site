@@ -218,12 +218,17 @@ $page_title = $product['name'];
 $page_description = $product['short_desc'] ?? $product['short_description'] ?? '';
 $current_page = 'shop';
 
-// PHASE 12c: If a published AI page exists, map its content into the
-// EXACT field shape that products/product-template.php expects (same
-// shape as includes/product-data.php uses for hand-built products like
-// Retatrutide). The existing template then renders it identically — no
-// custom layout, no template modifications, just a data swap.
-if ($aiPage !== null) {
+// PHASE 12c: AI page merge — only if:
+//   (a) A published AI page exists for this compound, AND
+//   (b) Either force_ai=true (admin explicitly chose AI), OR
+//       no hand-built page exists in product-data.php for this slug.
+//
+// Hand-built pages take priority by default. Admin can override per
+// compound by checking "Override hand-built page" in the Page Builder.
+$hasHandBuiltPage = !empty($product) && isset($products[$slug]);
+$useAiPage = $aiPage !== null && (!$hasHandBuiltPage || !empty($aiPage['force_ai']));
+
+if ($useAiPage) {
     $hero      = $aiPage['hero']              ?? [];
     $whyCards  = $aiPage['why_cards']         ?? [];
     $audience  = $aiPage['audience']          ?? ['intro' => '', 'profiles' => []];
