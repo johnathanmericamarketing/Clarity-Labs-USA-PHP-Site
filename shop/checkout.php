@@ -845,7 +845,7 @@ if (!$hasWater) {
         save_shipping_as_default: form.querySelector('[name="save_shipping_as_default"]')?.checked ? 1 : 0,
       };
 
-      const res = await fetch('<?= SHOP_URL ?>/php/checkout-actions.php?action=place-order', {
+      const res = await fetch('/php/checkout-actions.php?action=place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify(orderData),
