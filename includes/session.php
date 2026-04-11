@@ -291,7 +291,8 @@ function cart_is_empty(): bool {
  */
 function cart_items_for_api(): array {
     return array_map(fn($item) => [
-        'sku' => $item['sku'],
-        'qty' => $item['qty'],
+        'sku'   => $item['sku'],
+        'qty'   => $item['qty'],
+        'price' => $item['price'],  // per-vial price stored at cart-add time
     ], cart_items());
 }
