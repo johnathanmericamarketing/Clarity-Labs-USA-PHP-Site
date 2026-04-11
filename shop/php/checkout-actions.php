@@ -4,12 +4,21 @@
    Handles shipping rates, tax calculation, order placement
    ============================================================ */
 
+// Suppress PHP warnings/notices — any output before JSON breaks res.json() in the browser
+error_reporting(0);
+ini_set('display_errors', '0');
+ob_start(); // Buffer any accidental output from includes
+
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/csrf.php';
 require_once __DIR__ . '/../../includes/api-client.php';
+
+// Discard any output from includes (BOM, whitespace, notices)
+ob_end_clean();
+ob_start(); // Fresh buffer for our JSON response
 
 clarity_session_start();
 
@@ -106,24 +115,13 @@ switch ($action) {
         $api = new ClarityApiClient();
         $customerToken = get_customer_token();
 
-        // DEBUG LOG — temporary, remove after checkout is working
-        $debugLog = __DIR__ . '/../../logs/checkout-debug.log';
-        file_put_contents($debugLog, date('Y-m-d H:i:s') . " === CHECKOUT ATTEMPT ===\n", FILE_APPEND);
-        file_put_contents($debugLog, "Token: " . (empty($customerToken) ? 'EMPTY!' : 'present (' . strlen($customerToken) . ' chars)') . "\n", FILE_APPEND);
-        file_put_contents($debugLog, "Cart items: " . json_encode(cart_items_for_api()) . "\n", FILE_APPEND);
-
         // Audit M14: Validate cart items against ops API immediately before
         // creating the order.
         $validation = $api->validateOrder(cart_items_for_api(), $customerToken);
-
-        file_put_contents($debugLog, "Validate response: " . json_encode($validation) . "\n", FILE_APPEND);
-
         if (empty($validation['success']) || empty($validation['valid'])) {
-            $errorMsg = $validation['message'] ?? $validation['error'] ?? 'Some items in your cart are no longer available.';
-            file_put_contents($debugLog, "Validate FAILED: " . $errorMsg . "\n\n", FILE_APPEND);
             echo json_encode([
                 'success' => false,
-                'error'   => $errorMsg,
+                'error'   => $validation['message'] ?? $validation['error'] ?? 'Some items in your cart are no longer available.',
             ]);
             exit;
         }
