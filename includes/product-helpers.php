@@ -72,9 +72,14 @@ function group_products_by_compound(array $products): array {
         usort($g['sizes'], function ($a, $b) {
             return (float) $a['mg'] - (float) $b['mg'];
         });
-        // Default SKU to first (smallest) size
-        if (!empty($g['sizes'])) {
-            $g['sku'] = $g['sizes'][0]['sku'];
+        // Default SKU to first IN-STOCK size (smallest). If all are out of
+        // stock, fall back to the first size so the link still works.
+        $g['sku'] = $g['sizes'][0]['sku'] ?? '';
+        foreach ($g['sizes'] as $sz) {
+            if (($sz['stock_status'] ?? '') !== 'Out of Stock') {
+                $g['sku'] = $sz['sku'];
+                break;
+            }
         }
         $g['variant_count'] = count($g['sizes']);
     }
