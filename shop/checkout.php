@@ -892,8 +892,8 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // Redirect to confirmation page — bulletproof, no JS can break it
-        window.location.href = '/shop/checkout?step=complete&order=' + encodeURIComponent(data.order_number || '');
+        // Redirect to confirmation page — use current page path so it works on both domains
+        window.location.href = window.location.pathname + '?step=complete&order=' + encodeURIComponent(data.order_number || '');
         return;
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
