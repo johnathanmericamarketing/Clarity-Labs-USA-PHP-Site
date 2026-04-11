@@ -14,6 +14,33 @@ require_once __DIR__ . '/../includes/api-client.php';
 
 access_guard();
 
+// Handle order completion redirect — show Step 3 confirmation
+if (($_GET['step'] ?? '') === 'complete' && !empty($_GET['order'])) {
+    $completedOrderNumber = htmlspecialchars($_GET['order']);
+    $page_title = 'Order Placed';
+    $customer = get_customer();
+    include __DIR__ . '/../includes/header.php';
+    ?>
+    <div style="max-width: 600px; margin: 60px auto; text-align: center; padding: 0 20px;">
+      <div style="font-size: 64px; margin-bottom: 16px;">&#10003;</div>
+      <h1 style="font-size: 28px; color: #0B1E3F; margin: 0 0 12px;">Order Placed!</h1>
+      <p style="font-size: 16px; color: #6B7185; line-height: 1.6; margin: 0 0 24px;">
+        Your order <strong><?= $completedOrderNumber ?></strong> has been received.<br>
+        Check your email at <strong><?= htmlspecialchars($customer['email'] ?? '') ?></strong> for your invoice and payment instructions.
+      </p>
+      <div style="background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 20px; text-align: left; margin: 0 0 32px;">
+        <h3 style="margin: 0 0 12px; font-size: 14px; color: #0B1E3F;">What happens next?</h3>
+        <p style="margin: 0 0 8px; font-size: 13px; color: #6B7185;">1. Check your email for the invoice with payment details</p>
+        <p style="margin: 0 0 8px; font-size: 13px; color: #6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>
+        <p style="margin: 0; font-size: 13px; color: #6B7185;">3. Once confirmed, we ship with tracking provided</p>
+      </div>
+      <a href="/shop/" style="display: inline-block; padding: 14px 36px; background: #0B1E3F; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Continue Shopping</a>
+    </div>
+    <?php
+    include __DIR__ . '/../includes/footer.php';
+    exit;
+}
+
 // Redirect if cart is empty
 if (cart_is_empty()) {
     header('Location: ' . SHOP_URL . '/cart');
@@ -865,35 +892,16 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // Advance to confirmation FIRST — nothing should block this
-        document.getElementById('order-number').textContent = data.order_number || '';
-        document.getElementById('order-email').textContent = <?= json_encode($customer['email'] ?? '') ?>;
-        goToStep(3);
-        // Hide sidebar on confirmation
-        try { document.getElementById('order-summary').style.display = 'none'; } catch(e) {}
-
-        // GA4 purchase event (non-blocking — don't let analytics break checkout)
-        try {
-          if (typeof ClarityAnalytics !== 'undefined') {
-            ClarityAnalytics.purchase({
-              id: data.order_number || '',
-              total: parseFloat((document.getElementById('order-total-btn') || {}).textContent || '0') || 0,
-              shipping: shippingAmount,
-              tax: 0,
-              items: <?= json_encode(array_map(function($item) {
-                return ['sku' => $item['sku'], 'name' => $item['name'], 'price' => $item['price'], 'quantity' => $item['qty']];
-              }, cart_items())) ?>
-            });
-          }
-        } catch (gaErr) {
-          console.warn('GA4 purchase event failed:', gaErr);
-        }
+        // Redirect to confirmation page — bulletproof, no JS can break it
+        window.location.href = '/shop/checkout?step=complete&order=' + encodeURIComponent(data.order_number || '');
+        return;
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
         btn.disabled = false;
         btn.textContent = 'Place Order — $' + document.getElementById('order-total-btn').textContent;
       }
     } catch (err) {
+      // If we get here but the order might have been created, check if cart is now empty
       showError('Something went wrong. Please try again.');
       btn.disabled = false;
       btn.textContent = 'Place Order — $' + document.getElementById('order-total-btn').textContent;
