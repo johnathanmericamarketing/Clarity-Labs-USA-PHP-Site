@@ -865,23 +865,29 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // GA4 purchase event
-        if (typeof ClarityAnalytics !== 'undefined') {
-          ClarityAnalytics.purchase({
-            id: data.order_number || '',
-            total: parseFloat(document.getElementById('order-total-btn').textContent) || 0,
-            shipping: shippingAmount,
-            tax: 0,
-            items: <?= json_encode(array_map(function($item) {
-              return ['sku' => $item['sku'], 'name' => $item['name'], 'price' => $item['price'], 'quantity' => $item['qty']];
-            }, cart_items())) ?>
-          });
-        }
+        // Advance to confirmation FIRST — nothing should block this
         document.getElementById('order-number').textContent = data.order_number || '';
         document.getElementById('order-email').textContent = <?= json_encode($customer['email'] ?? '') ?>;
         goToStep(3);
         // Hide sidebar on confirmation
-        document.getElementById('order-summary').style.display = 'none';
+        try { document.getElementById('order-summary').style.display = 'none'; } catch(e) {}
+
+        // GA4 purchase event (non-blocking — don't let analytics break checkout)
+        try {
+          if (typeof ClarityAnalytics !== 'undefined') {
+            ClarityAnalytics.purchase({
+              id: data.order_number || '',
+              total: parseFloat((document.getElementById('order-total-btn') || {}).textContent || '0') || 0,
+              shipping: shippingAmount,
+              tax: 0,
+              items: <?= json_encode(array_map(function($item) {
+                return ['sku' => $item['sku'], 'name' => $item['name'], 'price' => $item['price'], 'quantity' => $item['qty']];
+              }, cart_items())) ?>
+            });
+          }
+        } catch (gaErr) {
+          console.warn('GA4 purchase event failed:', gaErr);
+        }
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
         btn.disabled = false;
