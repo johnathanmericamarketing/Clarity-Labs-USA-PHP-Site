@@ -851,7 +851,18 @@ if (!$hasWater) {
         body: JSON.stringify(orderData),
       });
 
-      const data = await res.json();
+      const responseText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        // Response wasn't valid JSON — show what came back
+        console.error('Checkout response (not JSON):', responseText);
+        showError('Server response error. Check console for details.');
+        btn.disabled = false;
+        btn.textContent = 'Place Order — $' + document.getElementById('order-total-btn').textContent;
+        return;
+      }
 
       if (data.success) {
         // GA4 purchase event
