@@ -892,8 +892,30 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // Redirect to confirmation page — use current page path so it works on both domains
-        window.location.href = window.location.pathname + '?step=complete&order=' + encodeURIComponent(data.order_number || '');
+        // Show confirmation inline — no redirect needed
+        document.querySelector('.checkout-container, .checkout-main, main, .checkout-steps').closest('main')
+          || document.querySelector('.checkout-container')
+          || document.querySelector('main');
+
+        // Replace entire page content with confirmation
+        var mainContent = document.querySelector('.checkout-wrap') || document.querySelector('main') || document.body;
+        mainContent.innerHTML = '<div style="max-width:600px;margin:60px auto;text-align:center;padding:0 20px;">' +
+          '<div style="font-size:64px;margin-bottom:16px;">&#10003;</div>' +
+          '<h1 style="font-size:28px;color:#0B1E3F;margin:0 0 12px;">Order Placed!</h1>' +
+          '<p style="font-size:16px;color:#6B7185;line-height:1.6;margin:0 0 24px;">' +
+            'Your order <strong>' + (data.order_number || '') + '</strong> has been received.<br>' +
+            'Check your email at <strong><?= htmlspecialchars($customer['email'] ?? '') ?></strong> for your invoice and payment instructions.' +
+          '</p>' +
+          '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:20px;text-align:left;margin:0 0 32px;">' +
+            '<h3 style="margin:0 0 12px;font-size:14px;color:#0B1E3F;">What happens next?</h3>' +
+            '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">1. Check your email for the invoice with payment details</p>' +
+            '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>' +
+            '<p style="margin:0;font-size:13px;color:#6B7185;">3. Once confirmed, we ship with tracking provided</p>' +
+          '</div>' +
+          '<a href="<?= SHOP_URL ?>/" style="display:inline-block;padding:14px 36px;background:#0B1E3F;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Shopping</a>' +
+        '</div>';
+        // Scroll to top
+        window.scrollTo(0, 0);
         return;
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
