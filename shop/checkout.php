@@ -14,30 +14,38 @@ require_once __DIR__ . '/../includes/api-client.php';
 
 access_guard();
 
-// Handle order completion redirect — show Step 3 confirmation
+// Handle order completion — show confirmation page
 if (($_GET['step'] ?? '') === 'complete' && !empty($_GET['order'])) {
     $completedOrderNumber = htmlspecialchars($_GET['order']);
-    $page_title = 'Order Placed';
-    $customer = get_customer();
-    include __DIR__ . '/../includes/header.php';
-    ?>
-    <div style="max-width: 600px; margin: 60px auto; text-align: center; padding: 0 20px;">
-      <div style="font-size: 64px; margin-bottom: 16px;">&#10003;</div>
-      <h1 style="font-size: 28px; color: #0B1E3F; margin: 0 0 12px;">Order Placed!</h1>
-      <p style="font-size: 16px; color: #6B7185; line-height: 1.6; margin: 0 0 24px;">
-        Your order <strong><?= $completedOrderNumber ?></strong> has been received.<br>
-        Check your email at <strong><?= htmlspecialchars($customer['email'] ?? '') ?></strong> for your invoice and payment instructions.
-      </p>
-      <div style="background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 20px; text-align: left; margin: 0 0 32px;">
-        <h3 style="margin: 0 0 12px; font-size: 14px; color: #0B1E3F;">What happens next?</h3>
-        <p style="margin: 0 0 8px; font-size: 13px; color: #6B7185;">1. Check your email for the invoice with payment details</p>
-        <p style="margin: 0 0 8px; font-size: 13px; color: #6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>
-        <p style="margin: 0; font-size: 13px; color: #6B7185;">3. Once confirmed, we ship with tracking provided</p>
-      </div>
-      <a href="/shop/" style="display: inline-block; padding: 14px 36px; background: #0B1E3F; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Continue Shopping</a>
-    </div>
-    <?php
-    include __DIR__ . '/../includes/footer.php';
+    $customerEmail = htmlspecialchars(get_customer()['email'] ?? '');
+    ?><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Placed — Clarity Labs USA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;font-family:'Inter',sans-serif;background:#f8fafc;color:#0B1E3F;}</style>
+</head>
+<body>
+<div style="max-width:600px;margin:60px auto;text-align:center;padding:0 20px;">
+  <div style="font-size:64px;margin-bottom:16px;color:#2A9D8F;">&#10003;</div>
+  <h1 style="font-family:'DM Serif Display',serif;font-size:32px;margin:0 0 12px;">Order Placed!</h1>
+  <p style="font-size:16px;color:#6B7185;line-height:1.6;margin:0 0 24px;">
+    Your order <strong style="color:#0B1E3F;"><?= $completedOrderNumber ?></strong> has been received.<br>
+    Check your email at <strong style="color:#0B1E3F;"><?= $customerEmail ?></strong> for your invoice and payment instructions.
+  </p>
+  <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:20px;text-align:left;margin:0 0 32px;">
+    <h3 style="margin:0 0 12px;font-size:14px;">What happens next?</h3>
+    <p style="margin:0 0 8px;font-size:13px;color:#6B7185;">1. Check your email for the invoice with payment details</p>
+    <p style="margin:0 0 8px;font-size:13px;color:#6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>
+    <p style="margin:0;font-size:13px;color:#6B7185;">3. Once confirmed, we ship with tracking provided</p>
+  </div>
+  <a href="<?= SHOP_URL ?>/" style="display:inline-block;padding:14px 36px;background:#0B1E3F;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Shopping</a>
+</div>
+</body>
+</html><?php
     exit;
 }
 
@@ -892,30 +900,9 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // Show confirmation inline — no redirect needed
-        document.querySelector('.checkout-container, .checkout-main, main, .checkout-steps').closest('main')
-          || document.querySelector('.checkout-container')
-          || document.querySelector('main');
-
-        // Replace entire page content with confirmation
-        var mainContent = document.querySelector('.checkout-wrap') || document.querySelector('main') || document.body;
-        mainContent.innerHTML = '<div style="max-width:600px;margin:60px auto;text-align:center;padding:0 20px;">' +
-          '<div style="font-size:64px;margin-bottom:16px;">&#10003;</div>' +
-          '<h1 style="font-size:28px;color:#0B1E3F;margin:0 0 12px;">Order Placed!</h1>' +
-          '<p style="font-size:16px;color:#6B7185;line-height:1.6;margin:0 0 24px;">' +
-            'Your order <strong>' + (data.order_number || '') + '</strong> has been received.<br>' +
-            'Check your email at <strong><?= htmlspecialchars($customer['email'] ?? '') ?></strong> for your invoice and payment instructions.' +
-          '</p>' +
-          '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:20px;text-align:left;margin:0 0 32px;">' +
-            '<h3 style="margin:0 0 12px;font-size:14px;color:#0B1E3F;">What happens next?</h3>' +
-            '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">1. Check your email for the invoice with payment details</p>' +
-            '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>' +
-            '<p style="margin:0;font-size:13px;color:#6B7185;">3. Once confirmed, we ship with tracking provided</p>' +
-          '</div>' +
-          '<a href="<?= SHOP_URL ?>/" style="display:inline-block;padding:14px 36px;background:#0B1E3F;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Shopping</a>' +
-        '</div>';
-        // Scroll to top
-        window.scrollTo(0, 0);
+        // Redirect to confirmation page
+        window.location.href = window.location.pathname + '?step=complete&order=' + encodeURIComponent(data.order_number || '');
+        return;
         return;
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
