@@ -323,8 +323,8 @@ class ClarityApiClient {
     /**
      * Validate order items and pricing before checkout
      */
-    public function validateOrder(array $items): array {
-        return $this->post('/orders/validate', ['items' => $items]);
+    public function validateOrder(array $items, ?string $bearerToken = null): array {
+        return $this->post('/orders/validate', ['items' => $items], $bearerToken);
     }
 
     /**

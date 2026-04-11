@@ -110,7 +110,7 @@ switch ($action) {
         // row locking (belt + suspenders), but this client-side check gives
         // the customer a clear error message instead of a generic 500 if
         // stock changed between page load and checkout submission.
-        $validation = $api->validateOrder(cart_items_for_api());
+        $validation = $api->validateOrder(cart_items_for_api(), get_customer_token());
         if (empty($validation['success']) || empty($validation['valid'])) {
             echo json_encode([
                 'success' => false,
