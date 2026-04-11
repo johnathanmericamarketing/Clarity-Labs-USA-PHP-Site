@@ -104,17 +104,26 @@ switch ($action) {
         }
 
         $api = new ClarityApiClient();
+        $customerToken = get_customer_token();
+
+        // DEBUG LOG — temporary, remove after checkout is working
+        $debugLog = __DIR__ . '/../../logs/checkout-debug.log';
+        file_put_contents($debugLog, date('Y-m-d H:i:s') . " === CHECKOUT ATTEMPT ===\n", FILE_APPEND);
+        file_put_contents($debugLog, "Token: " . (empty($customerToken) ? 'EMPTY!' : 'present (' . strlen($customerToken) . ' chars)') . "\n", FILE_APPEND);
+        file_put_contents($debugLog, "Cart items: " . json_encode(cart_items_for_api()) . "\n", FILE_APPEND);
 
         // Audit M14: Validate cart items against ops API immediately before
-        // creating the order. The ops store() endpoint also re-validates with
-        // row locking (belt + suspenders), but this client-side check gives
-        // the customer a clear error message instead of a generic 500 if
-        // stock changed between page load and checkout submission.
-        $validation = $api->validateOrder(cart_items_for_api(), get_customer_token());
+        // creating the order.
+        $validation = $api->validateOrder(cart_items_for_api(), $customerToken);
+
+        file_put_contents($debugLog, "Validate response: " . json_encode($validation) . "\n", FILE_APPEND);
+
         if (empty($validation['success']) || empty($validation['valid'])) {
+            $errorMsg = $validation['message'] ?? $validation['error'] ?? 'Some items in your cart are no longer available.';
+            file_put_contents($debugLog, "Validate FAILED: " . $errorMsg . "\n\n", FILE_APPEND);
             echo json_encode([
                 'success' => false,
-                'error'   => $validation['message'] ?? 'Some items in your cart are no longer available. Please refresh and try again.',
+                'error'   => $errorMsg,
             ]);
             exit;
         }
