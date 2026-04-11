@@ -22,7 +22,7 @@ class ClarityApiClient {
     public function __construct() {
         $this->baseUrl = OPS_API_URL;
         $this->apiKey  = CLARITY_API_KEY;
-        $this->timeout = 10; // seconds
+        $this->timeout = 30; // seconds — order creation generates invoice PDF + sends email
         $this->cacheDir = dirname(__DIR__) . '/cache';
         if (!is_dir($this->cacheDir)) {
             @mkdir($this->cacheDir, 0750, true); // Audit L11: tightened from 0755

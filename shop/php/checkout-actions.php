@@ -4,21 +4,12 @@
    Handles shipping rates, tax calculation, order placement
    ============================================================ */
 
-// Suppress PHP warnings/notices — any output before JSON breaks res.json() in the browser
-error_reporting(0);
-ini_set('display_errors', '0');
-ob_start(); // Buffer any accidental output from includes
-
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/csrf.php';
 require_once __DIR__ . '/../../includes/api-client.php';
-
-// Discard any output from includes (BOM, whitespace, notices)
-ob_end_clean();
-ob_start(); // Fresh buffer for our JSON response
 
 clarity_session_start();
 
