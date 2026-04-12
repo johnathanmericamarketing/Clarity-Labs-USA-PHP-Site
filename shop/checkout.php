@@ -900,20 +900,73 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // Show confirmation inline — works on any domain, no redirect needed
-        document.body.innerHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Order Placed</title><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;font-family:Inter,sans-serif;background:#f8fafc;color:#0B1E3F;}</style></head><body>' +
-          '<div style="max-width:600px;margin:60px auto;text-align:center;padding:0 20px;">' +
-            '<div style="font-size:64px;margin-bottom:16px;color:#2A9D8F;">&#10003;</div>' +
-            '<h1 style="font-family:DM Serif Display,serif;font-size:32px;margin:0 0 12px;">Order Placed!</h1>' +
-            '<p style="font-size:16px;color:#6B7185;line-height:1.6;margin:0 0 24px;">Your order <strong style="color:#0B1E3F;">' + (data.order_number || '') + '</strong> has been received.<br>Check your email at <strong style="color:#0B1E3F;"><?= htmlspecialchars($customer['email'] ?? '') ?></strong> for your invoice and payment instructions.</p>' +
-            '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:20px;text-align:left;margin:0 0 32px;">' +
-              '<h3 style="margin:0 0 12px;font-size:14px;">What happens next?</h3>' +
-              '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">1. Check your email for the invoice with payment details</p>' +
-              '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>' +
-              '<p style="margin:0;font-size:13px;color:#6B7185;">3. Once confirmed, we ship with tracking provided</p>' +
+        // Show branded confirmation page inline
+        var orderNum = data.order_number || '';
+        var custEmail = <?= json_encode($customer['email'] ?? '') ?>;
+        document.body.innerHTML = '<div style="margin:0;font-family:Montserrat,Inter,sans-serif;background:#f8fafc;min-height:100vh;">' +
+          // Top branded bar
+          '<div style="background:#0B1E3F;padding:20px 0;text-align:center;">' +
+            '<div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:2px;">CLARITY LABS USA</div>' +
+            '<div style="font-size:10px;color:#3EC4B8;letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Research-Grade Peptides</div>' +
+          '</div>' +
+          '<div style="height:4px;background:linear-gradient(90deg,#1A7A6E,#3EC4B8,#1A7A6E);"></div>' +
+          // Main content
+          '<div style="max-width:560px;margin:0 auto;padding:48px 24px;text-align:center;">' +
+            // Success icon
+            '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#1A7A6E,#3EC4B8);margin:0 auto 24px;display:flex;align-items:center;justify-content:center;">' +
+              '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
             '</div>' +
-            '<a href="/" style="display:inline-block;padding:14px 36px;background:#0B1E3F;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Shopping</a>' +
-          '</div></body></html>';
+            '<h1 style="font-size:32px;font-weight:800;color:#0B1E3F;margin:0 0 8px;letter-spacing:-0.5px;">Order Confirmed</h1>' +
+            '<p style="font-size:15px;color:#6B7185;margin:0 0 32px;line-height:1.6;">Thank you for your order!</p>' +
+            // Order number card
+            '<div style="background:#0B1E3F;border-radius:12px;padding:24px;margin:0 0 24px;text-align:center;">' +
+              '<div style="font-size:10px;color:#3EC4B8;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Order Number</div>' +
+              '<div style="font-size:28px;font-weight:800;color:#fff;letter-spacing:2px;">' + orderNum + '</div>' +
+            '</div>' +
+            // Email notice
+            '<div style="background:#fff;border:1px solid #E4E6EB;border-radius:12px;padding:20px;margin:0 0 24px;text-align:left;">' +
+              '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+                '<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(26,122,110,0.1),rgba(62,196,184,0.1));display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+                  '<svg width="20" height="20" viewBox="0 0 20 20" fill="#1A7A6E"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg>' +
+                '</div>' +
+                '<div>' +
+                  '<div style="font-size:14px;font-weight:700;color:#0B1E3F;margin-bottom:4px;">Check Your Email</div>' +
+                  '<div style="font-size:13px;color:#6B7185;line-height:1.5;">Your invoice has been sent to <strong style="color:#0B1E3F;">' + custEmail + '</strong> with payment instructions.</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            // Steps
+            '<div style="background:#fff;border:1px solid #E4E6EB;border-radius:12px;padding:24px;margin:0 0 32px;text-align:left;">' +
+              '<div style="font-size:12px;font-weight:700;color:#0B1E3F;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;">What Happens Next</div>' +
+              '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">' +
+                '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;">Review your invoice email and choose your preferred payment method</div>' +
+              '</div>' +
+              '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">' +
+                '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;">Send payment via <strong style="color:#0B1E3F;">Zelle, Venmo, ACH,</strong> or <strong style="color:#0B1E3F;">Check</strong></div>' +
+              '</div>' +
+              '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+                '<div style="width:28px;height:28px;border-radius:50%;background:#1A7A6E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;">Once confirmed, your order ships with <strong style="color:#0B1E3F;">tracking provided</strong></div>' +
+              '</div>' +
+            '</div>' +
+            // Trust badges
+            '<div style="display:flex;justify-content:center;gap:24px;margin-bottom:32px;flex-wrap:wrap;">' +
+              '<div style="font-size:11px;color:#6B7185;display:flex;align-items:center;gap:4px;"><span style="color:#1A7A6E;">&#10003;</span> Third-Party Tested</div>' +
+              '<div style="font-size:11px;color:#6B7185;display:flex;align-items:center;gap:4px;"><span style="color:#1A7A6E;">&#10003;</span> COA Available</div>' +
+              '<div style="font-size:11px;color:#6B7185;display:flex;align-items:center;gap:4px;"><span style="color:#1A7A6E;">&#10003;</span> US Shipping</div>' +
+            '</div>' +
+            // CTA
+            '<a href="/" style="display:inline-block;padding:14px 40px;background:#0B1E3F;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:0.5px;transition:transform 0.15s;">Continue Shopping</a>' +
+          '</div>' +
+          // Footer
+          '<div style="background:#0B1E3F;padding:20px;text-align:center;margin-top:40px;">' +
+            '<div style="font-size:12px;color:#fff;font-weight:600;letter-spacing:1px;">CLARITY LABS USA</div>' +
+            '<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">For research and laboratory use only.</div>' +
+          '</div>' +
+        '</div>';
+        window.scrollTo(0, 0);
         return;
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
