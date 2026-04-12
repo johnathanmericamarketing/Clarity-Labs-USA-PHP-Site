@@ -935,21 +935,46 @@ if (!$hasWater) {
                 '</div>' +
               '</div>' +
             '</div>' +
-            // Steps
-            '<div style="background:#fff;border:1px solid #E4E6EB;border-radius:12px;padding:24px;margin:0 0 32px;text-align:left;">' +
+            // Payment instructions - THE MOST IMPORTANT PART
+            '<div style="background:#0B1E3F;border-radius:12px;padding:24px;margin:0 0 24px;text-align:left;color:#fff;">' +
+              '<div style="font-size:14px;font-weight:700;color:#3EC4B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">&#9888; How to Pay</div>' +
+              '<div style="font-size:14px;color:#e2e8f0;line-height:1.7;margin-bottom:16px;">We just sent you an invoice by email. Open it and send payment using <strong style="color:#fff;">one</strong> of these methods:</div>' +
+              // Zelle
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
+                '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128179; Zelle</div>' +
+                '<div style="font-size:13px;color:#cbd5e1;">Open your banking app &rarr; Send with Zelle &rarr; Enter the email from your invoice</div>' +
+              '</div>' +
+              // Venmo
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+                '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128241; Venmo</div>' +
+                '<div style="font-size:13px;color:#cbd5e1;">Open Venmo &rarr; Search for our handle from your invoice &rarr; Send payment</div>' +
+              '</div>' +
+              // Memo warning
+              '<div style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px 16px;text-align:center;">' +
+                '<div style="font-size:13px;font-weight:700;color:#fca5a5;margin-bottom:4px;">&#9888; Include your order number in the memo</div>' +
+                '<div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;font-family:monospace;">' + orderNum + '</div>' +
+                '<div style="font-size:11px;color:#fca5a5;margin-top:4px;">Payments without this memo cannot be matched automatically</div>' +
+              '</div>' +
+            '</div>' +
+            // Timeline
+            '<div style="background:#fff;border:1px solid #E4E6EB;border-radius:12px;padding:24px;margin:0 0 24px;text-align:left;">' +
               '<div style="font-size:12px;font-weight:700;color:#0B1E3F;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;">What Happens Next</div>' +
               '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">' +
-                '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</div>' +
-                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;">Review your invoice email and choose your preferred payment method</div>' +
+                '<div style="width:28px;height:28px;border-radius:50%;background:#3EC4B8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">&#10003;</div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;"><strong style="color:#0B1E3F;">Order received</strong> &mdash; you\'re here!</div>' +
               '</div>' +
               '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">' +
                 '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div>' +
-                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;">Send payment via <strong style="color:#0B1E3F;">Zelle, Venmo, ACH,</strong> or <strong style="color:#0B1E3F;">Check</strong></div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;"><strong style="color:#0B1E3F;">Send payment</strong> via Zelle or Venmo within 48 hours</div>' +
               '</div>' +
               '<div style="display:flex;align-items:flex-start;gap:12px;">' +
-                '<div style="width:28px;height:28px;border-radius:50%;background:#1A7A6E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>' +
-                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;">Once confirmed, your order ships with <strong style="color:#0B1E3F;">tracking provided</strong></div>' +
+                '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;"><strong style="color:#0B1E3F;">We ship</strong> with tracking once payment is confirmed</div>' +
               '</div>' +
+            '</div>' +
+            // 48 hour notice
+            '<div style="background:#FFFBF0;border:1px solid #F0E6C8;border-radius:10px;padding:14px 16px;margin:0 0 32px;font-size:13px;color:#92400e;text-align:center;">' +
+              '<strong>&#9200; Payment due within 48 hours.</strong> Orders not paid within this window are automatically cancelled.' +
             '</div>' +
             // Trust badges
             '<div style="display:flex;justify-content:center;gap:24px;margin-bottom:32px;flex-wrap:wrap;">' +
