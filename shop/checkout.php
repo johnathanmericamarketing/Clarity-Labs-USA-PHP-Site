@@ -538,7 +538,7 @@ if (!$hasWater) {
                   fd.append('qty', qty);
                   fd.append('image_url', <?= json_encode($waterImg) ?>);
 
-                  var res = await fetch('<?= SHOP_URL ?>/php/cart-actions.php?action=add', {
+                  var res = await fetch('php/cart-actions.php?action=add', {
                     method: 'POST',
                     body: fd,
                   });
@@ -789,7 +789,7 @@ if (!$hasWater) {
     fd.append('_csrf_token', csrfToken);
 
     try {
-      const res = await fetch('<?= SHOP_URL ?>/php/checkout-actions.php?action=shipping-rates', {
+      const res = await fetch('php/checkout-actions.php?action=shipping-rates', {
         method: 'POST',
         body: fd,
       });
@@ -880,7 +880,7 @@ if (!$hasWater) {
         save_shipping_as_default: form.querySelector('[name="save_shipping_as_default"]')?.checked ? 1 : 0,
       };
 
-      const res = await fetch('<?= SHOP_URL ?>/php/checkout-actions.php?action=place-order', {
+      const res = await fetch('php/checkout-actions.php?action=place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify(orderData),
@@ -900,9 +900,20 @@ if (!$hasWater) {
       }
 
       if (data.success) {
-        // Redirect to confirmation page
-        window.location.href = window.location.pathname + '?step=complete&order=' + encodeURIComponent(data.order_number || '');
-        return;
+        // Show confirmation inline — works on any domain, no redirect needed
+        document.body.innerHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Order Placed</title><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;font-family:Inter,sans-serif;background:#f8fafc;color:#0B1E3F;}</style></head><body>' +
+          '<div style="max-width:600px;margin:60px auto;text-align:center;padding:0 20px;">' +
+            '<div style="font-size:64px;margin-bottom:16px;color:#2A9D8F;">&#10003;</div>' +
+            '<h1 style="font-family:DM Serif Display,serif;font-size:32px;margin:0 0 12px;">Order Placed!</h1>' +
+            '<p style="font-size:16px;color:#6B7185;line-height:1.6;margin:0 0 24px;">Your order <strong style="color:#0B1E3F;">' + (data.order_number || '') + '</strong> has been received.<br>Check your email at <strong style="color:#0B1E3F;"><?= htmlspecialchars($customer['email'] ?? '') ?></strong> for your invoice and payment instructions.</p>' +
+            '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:20px;text-align:left;margin:0 0 32px;">' +
+              '<h3 style="margin:0 0 12px;font-size:14px;">What happens next?</h3>' +
+              '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">1. Check your email for the invoice with payment details</p>' +
+              '<p style="margin:0 0 8px;font-size:13px;color:#6B7185;">2. Send payment via Zelle, Venmo, ACH, or Check</p>' +
+              '<p style="margin:0;font-size:13px;color:#6B7185;">3. Once confirmed, we ship with tracking provided</p>' +
+            '</div>' +
+            '<a href="/" style="display:inline-block;padding:14px 36px;background:#0B1E3F;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Shopping</a>' +
+          '</div></body></html>';
         return;
       } else {
         showError(data.error || 'Failed to place order. Please try again.');
@@ -910,7 +921,7 @@ if (!$hasWater) {
         btn.textContent = 'Place Order — $' + document.getElementById('order-total-btn').textContent;
       }
     } catch (err) {
-      // If we get here but the order might have been created, check if cart is now empty
+      console.error('Checkout error:', err);
       showError('Something went wrong. Please try again.');
       btn.disabled = false;
       btn.textContent = 'Place Order — $' + document.getElementById('order-total-btn').textContent;
