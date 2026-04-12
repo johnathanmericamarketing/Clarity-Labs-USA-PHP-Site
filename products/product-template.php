@@ -745,15 +745,13 @@ if (!empty($product['sizes'][0]['primary_image'])) {
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
-            addBtn.textContent = 'Added!';
+            addBtn.textContent = 'Added! Going to cart...';
             // GA4 add_to_cart event
             if (typeof ClarityAnalytics !== 'undefined') {
               ClarityAnalytics.addToCart({ name: name, sku: sku, price: price, quantity: 1 });
             }
-            // Update cart badge if exists
-            var badge = document.querySelector('.cart-count');
-            if (badge) { badge.textContent = data.cart_count; badge.style.display = 'inline-flex'; }
-            setTimeout(function() { addBtn.textContent = 'Add to Cart'; addBtn.disabled = false; }, 1500);
+            // Redirect to cart page
+            window.location.href = '<?php echo defined("SHOP_URL") ? SHOP_URL : ""; ?>/cart';
           } else {
             addBtn.textContent = data.error || 'Error';
             setTimeout(function() { addBtn.textContent = 'Add to Cart'; addBtn.disabled = false; }, 2000);
