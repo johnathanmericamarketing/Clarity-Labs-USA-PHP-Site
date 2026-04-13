@@ -682,7 +682,36 @@ if (!$hasWater) {
                 <span>Upgrade</span>
                 <span id="summary-shipping-upgrade">—</span>
               </div>
+
+              <!-- Promo Code Discount (hidden until applied) -->
+              <div class="checkout-summary__row" id="summary-discount-row" style="display: none;">
+                <span style="color: var(--green);">Discount <span id="discount-code-label"></span></span>
+                <span id="summary-discount" style="color: var(--green);">—</span>
+              </div>
             </div>
+
+            <!-- Promo Code Input -->
+            <div id="promo-code-section" style="margin: 12px 0; padding: 12px 0; border-top: 1px solid var(--rule);">
+              <div id="promo-input-wrapper">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">Promo Code</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="promo-code-input" placeholder="Enter code" maxlength="30" style="flex: 1; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; font-size: 14px; background: var(--card-bg); color: var(--text);">
+                  <button type="button" id="apply-promo-btn" onclick="applyPromoCode()" style="padding: 10px 16px; background: var(--navy); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;">Apply</button>
+                </div>
+                <div id="promo-message" style="margin-top: 6px; font-size: 12px; display: none;"></div>
+              </div>
+              <!-- Applied coupon badge (hidden until applied) -->
+              <div id="promo-applied-wrapper" style="display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(26,122,110,0.08); border: 1px solid rgba(26,122,110,0.20); border-radius: 8px;">
+                  <div>
+                    <span style="font-size: 13px; font-weight: 600; color: var(--green);">✓ <span id="applied-code-text"></span></span>
+                    <span id="applied-discount-text" style="font-size: 12px; color: var(--text-soft); margin-left: 8px;"></span>
+                  </div>
+                  <button type="button" onclick="removePromoCode()" style="background: none; border: none; color: var(--text-soft); font-size: 12px; cursor: pointer; text-decoration: underline;">Remove</button>
+                </div>
+              </div>
+            </div>
+
             <div class="checkout-summary__total">
               <span>Total</span>
               <span id="summary-total">$<?= number_format($subtotal, 2) ?></span>
@@ -847,6 +876,127 @@ if (!$hasWater) {
     btn.disabled = false;
     btn.textContent = 'Continue to Review';
   }
+
+  // ── Promo Code Functions ──
+  var appliedDiscount = 0;
+  var appliedCouponCode = null;
+
+  async function applyPromoCode() {
+    var input = document.getElementById('promo-code-input');
+    var code = (input.value || '').trim();
+    var msg = document.getElementById('promo-message');
+    var btn = document.getElementById('apply-promo-btn');
+
+    if (!code) {
+      msg.textContent = 'Please enter a promo code.';
+      msg.style.color = '#ef4444';
+      msg.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+    msg.style.display = 'none';
+
+    try {
+      var formData = new FormData();
+      formData.append('coupon_code', code);
+      formData.append('_csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+
+      var response = await fetch('/shop/php/checkout-actions.php?action=validate-coupon', {
+        method: 'POST',
+        body: formData
+      });
+      var data = JSON.parse(await response.text());
+
+      if (data.success && data.valid) {
+        appliedDiscount = parseFloat(data.discount_amount) || 0;
+        appliedCouponCode = code.toUpperCase();
+
+        // Show applied badge, hide input
+        document.getElementById('promo-input-wrapper').style.display = 'none';
+        document.getElementById('promo-applied-wrapper').style.display = 'block';
+        document.getElementById('applied-code-text').textContent = appliedCouponCode;
+        document.getElementById('applied-discount-text').textContent = '(-$' + appliedDiscount.toFixed(2) + ')';
+
+        // Show discount in summary
+        document.getElementById('summary-discount-row').style.display = 'flex';
+        document.getElementById('discount-code-label').textContent = '(' + appliedCouponCode + ')';
+        document.getElementById('summary-discount').textContent = '-$' + appliedDiscount.toFixed(2);
+
+        // Update total
+        updateTotalWithDiscount();
+
+        msg.style.display = 'none';
+      } else {
+        msg.textContent = data.error || data.message || 'Invalid promo code.';
+        msg.style.color = '#ef4444';
+        msg.style.display = 'block';
+        appliedDiscount = 0;
+        appliedCouponCode = null;
+      }
+    } catch (err) {
+      console.error('Promo code error:', err);
+      msg.textContent = 'Unable to verify code. Please try again.';
+      msg.style.color = '#ef4444';
+      msg.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Apply';
+  }
+
+  function removePromoCode() {
+    appliedDiscount = 0;
+    appliedCouponCode = null;
+
+    // Show input, hide badge
+    document.getElementById('promo-input-wrapper').style.display = 'block';
+    document.getElementById('promo-applied-wrapper').style.display = 'none';
+    document.getElementById('promo-code-input').value = '';
+
+    // Hide discount row
+    document.getElementById('summary-discount-row').style.display = 'none';
+
+    // Update total
+    updateTotalWithDiscount();
+
+    // Tell server to clear session coupon
+    var formData = new FormData();
+    formData.append('_csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+    fetch('/shop/php/checkout-actions.php?action=remove-coupon', { method: 'POST', body: formData });
+  }
+
+  function updateTotalWithDiscount() {
+    var subtotal = <?= json_encode((float) $subtotal) ?>;
+    var shippingEl = document.getElementById('summary-shipping');
+    var shipping = 0;
+    var upgradeRow = document.getElementById('summary-shipping-upgrade-row');
+    if (upgradeRow && upgradeRow.style.display !== 'none') {
+      var upgradeText = document.getElementById('summary-shipping-upgrade').textContent;
+      shipping = parseFloat(upgradeText.replace(/[^0-9.]/g, '')) || 0;
+    }
+
+    var total = Math.max(0, subtotal - appliedDiscount + shipping);
+    document.getElementById('summary-total').textContent = '$' + total.toFixed(2);
+
+    // Update Place Order button
+    var btnSpan = document.getElementById('order-total-btn');
+    if (btnSpan) btnSpan.textContent = total.toFixed(2);
+  }
+
+  // Allow Enter key on promo input
+  document.addEventListener('DOMContentLoaded', function() {
+    var promoInput = document.getElementById('promo-code-input');
+    if (promoInput) {
+      promoInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyPromoCode();
+        }
+      });
+    }
+  });
 
   async function placeOrder() {
     const agreeBox = document.getElementById('agree-terms');
