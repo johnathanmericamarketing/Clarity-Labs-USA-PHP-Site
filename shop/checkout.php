@@ -607,14 +607,26 @@ if (!$hasWater) {
               </script>
               <?php endif; ?>
 
-              <div class="checkout-form__checkbox" style="display: flex; gap: 10px; margin: 20px 0;">
-                <input type="checkbox" id="agree-terms" required>
-                <label for="agree-terms" style="font-size: 13px; color: var(--gray-600); line-height: 1.5;">
-                  I agree to the <a href="<?= SITE_URL ?>/terms" style="color: var(--green);">Terms of Service</a>,
-                  <a href="<?= SITE_URL ?>/refund" style="color: var(--green);">Refund Policy</a>,
-                  and confirm that all products are for <strong>research use only</strong>.
+              <div id="terms-box" style="display: flex; gap: 12px; align-items: flex-start; margin: 20px 0; padding: 16px; border: 2px solid #d1d5db; border-radius: 12px; background: #f9fafb; cursor: pointer; transition: all 0.2s ease;" onclick="document.getElementById('agree-terms').click();">
+                <input type="checkbox" id="agree-terms" required style="width: 22px; height: 22px; margin-top: 2px; flex-shrink: 0; accent-color: #1A7A6E; cursor: pointer;" onclick="event.stopPropagation();">
+                <label for="agree-terms" style="font-size: 14px; color: #374151; line-height: 1.6; cursor: pointer;">
+                  <strong style="color: #0B1E3F;">☑ Required:</strong> I agree to the <a href="<?= SITE_URL ?>/terms" style="color: #1A7A6E; font-weight: 600;">Terms of Service</a>,
+                  <a href="<?= SITE_URL ?>/refund" style="color: #1A7A6E; font-weight: 600;">Refund Policy</a>,
+                  and confirm that all products are for <strong style="color: #0B1E3F;">research use only</strong>.
                 </label>
               </div>
+              <script>
+                document.getElementById('agree-terms').addEventListener('change', function() {
+                  var box = document.getElementById('terms-box');
+                  if (this.checked) {
+                    box.style.borderColor = '#1A7A6E';
+                    box.style.background = 'rgba(26,122,110,0.05)';
+                  } else {
+                    box.style.borderColor = '#d1d5db';
+                    box.style.background = '#f9fafb';
+                  }
+                });
+              </script>
 
               <div style="margin-top: 24px;">
                 <button type="button" class="checkout-back" onclick="goToStep(1)">← Back to Shipping</button>
