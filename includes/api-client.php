@@ -22,7 +22,7 @@ class ClarityApiClient {
     public function __construct() {
         $this->baseUrl = OPS_API_URL;
         $this->apiKey  = CLARITY_API_KEY;
-        $this->timeout = 30; // seconds — order creation generates invoice PDF + sends email
+        $this->timeout = 60; // seconds — order creation generates invoice PDF + sends email (increased from 30)
         $this->cacheDir = dirname(__DIR__) . '/cache';
         if (!is_dir($this->cacheDir)) {
             @mkdir($this->cacheDir, 0750, true); // Audit L11: tightened from 0755
@@ -396,12 +396,14 @@ class ClarityApiClient {
        ────────────────────────────────────────── */
 
     /**
-     * Validate a coupon code
+     * Validate a coupon code against cart subtotal and items.
      */
-    public function validateCoupon(string $code, array $cartItems = []): array {
+    public function validateCoupon(string $code, float $subtotal, array $cartItems = [], ?int $customerId = null): array {
         return $this->post('/coupons/validate', [
-            'code'  => $code,
-            'items' => $cartItems,
+            'code'        => $code,
+            'subtotal'    => $subtotal,
+            'items'       => $cartItems,
+            'customer_id' => $customerId,
         ]);
     }
 

@@ -85,6 +85,65 @@ switch ($action) {
         break;
 
     /* ──────────────────────────────────────────
+       VALIDATE COUPON
+       ────────────────────────────────────────── */
+    case 'validate-coupon':
+        csrf_verify();
+
+        $code = trim($_POST['coupon_code'] ?? '');
+        if (empty($code)) {
+            echo json_encode(['success' => false, 'error' => 'Please enter a promo code.']);
+            exit;
+        }
+
+        $subtotal = cart_subtotal();
+        $items = cart_items_for_api();
+        $customer = get_customer();
+        $customerId = $customer['id'] ?? null;
+
+        $result = $api->validateCoupon($code, $subtotal, $items, $customerId);
+
+        if (($result['valid'] ?? false)) {
+            // Store in session for place-order to use
+            $_SESSION['applied_coupon'] = [
+                'code'            => $code,
+                'discount_amount' => (float) ($result['discount_amount'] ?? 0),
+                'discount_type'   => $result['discount_type'] ?? '',
+                'free_shipping'   => (bool) ($result['free_shipping'] ?? false),
+                'message'         => $result['message'] ?? '',
+            ];
+
+            echo json_encode([
+                'success'         => true,
+                'valid'           => true,
+                'discount_amount' => (float) ($result['discount_amount'] ?? 0),
+                'discount_type'   => $result['discount_type'] ?? '',
+                'free_shipping'   => (bool) ($result['free_shipping'] ?? false),
+                'message'         => $result['message'] ?? 'Promo code applied!',
+                'code'            => $code,
+            ]);
+        } else {
+            // Clear any previously applied coupon
+            unset($_SESSION['applied_coupon']);
+
+            echo json_encode([
+                'success' => false,
+                'valid'   => false,
+                'error'   => $result['message'] ?? 'Invalid promo code.',
+            ]);
+        }
+        break;
+
+    /* ──────────────────────────────────────────
+       REMOVE COUPON
+       ────────────────────────────────────────── */
+    case 'remove-coupon':
+        csrf_verify();
+        unset($_SESSION['applied_coupon']);
+        echo json_encode(['success' => true, 'message' => 'Promo code removed.']);
+        break;
+
+    /* ──────────────────────────────────────────
        PLACE ORDER
        ────────────────────────────────────────── */
     case 'place-order':
@@ -134,6 +193,7 @@ switch ($action) {
             'shipping_amount'  => (float) ($input['shipping_amount'] ?? 0),
             'payment_method'   => $input['payment_method'] ?? 'pending',
             'payment_reference' => $input['payment_reference'] ?? 'awaiting_invoice',
+            'coupon_code'      => $_SESSION['applied_coupon']['code'] ?? null,
             'affiliate_code'   => $_SESSION['affiliate_code'] ?? null,
             'save_shipping_as_default' => !empty($input['save_shipping_as_default']),
         ];
@@ -141,8 +201,9 @@ switch ($action) {
         $result = $api->createOrder($orderData, get_customer_token());
 
         if (!empty($result['success'])) {
-            // Clear cart after successful order
+            // Clear cart + applied coupon after successful order
             cart_clear();
+            unset($_SESSION['applied_coupon']);
 
             echo json_encode([
                 'success'      => true,

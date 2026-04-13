@@ -931,7 +931,7 @@ if (!$hasWater) {
                 '</div>' +
                 '<div>' +
                   '<div style="font-size:14px;font-weight:700;color:#0B1E3F;margin-bottom:4px;">Check Your Email</div>' +
-                  '<div style="font-size:13px;color:#6B7185;line-height:1.5;">Your invoice has been sent to <strong style="color:#0B1E3F;">' + custEmail + '</strong> with payment instructions.</div>' +
+                  '<div style="font-size:13px;color:#6B7185;line-height:1.5;">Your invoice will be sent to <strong style="color:#0B1E3F;">' + custEmail + '</strong> within the next few minutes with full payment instructions.</div>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -1000,7 +1000,7 @@ if (!$hasWater) {
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      showError('Something went wrong. Please try again.');
+      showError('Something went wrong. Your order may have been placed — please check your email for an invoice before trying again. If you don\'t receive an email within 5 minutes, contact support.');
       btn.disabled = false;
       btn.textContent = 'Place Order — $' + document.getElementById('order-total-btn').textContent;
     }

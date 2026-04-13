@@ -1,17 +1,19 @@
 <?php
 /* ============================================================
-   ClarityLabsUSA — Contact Form Mailer
-   Configure the $to variable below with your email address.
+   ClarityLabsUSA — Contact Form Handler
+   Routes contact submissions through the Ops API as support
+   tickets (POST /api/v1/support/ticket). This ensures:
+   - Tickets are trackable in the admin panel
+   - Email confirmations sent via Postmark (not PHP mail())
+   - Customer gets a public ticket URL to track their inquiry
    ============================================================ */
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/api-client.php';
 
 header('Content-Type: application/json');
-
-// ── Configuration ──
-$to = CONTACT_EMAIL;
-$subject_prefix = '[ClarityLabs USA] ';
 
 // ── Only accept POST ──
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -21,13 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // ── Honeypot check ──
 if (!empty($_POST['website'])) {
-    // Bot detected
+    // Bot detected — silently accept to not reveal the trap
     echo json_encode(['success' => true, 'message' => 'Message sent successfully.']);
     exit;
 }
 
-// ── Rate limiting (simple session-based) ──
-session_start();
+// ── CSRF + Rate limiting ──
 csrf_verify();
 $now = time();
 $cooldown = 60; // seconds between submissions
@@ -56,7 +57,7 @@ if (!empty($errors)) {
     exit;
 }
 
-// ── Build email ──
+// ── Map subject codes to friendly names ──
 $subject_map = [
     'general'   => 'General Inquiry',
     'products'  => 'Product Question',
@@ -67,33 +68,45 @@ $subject_map = [
 ];
 $subject_text = isset($subject_map[$subject]) ? $subject_map[$subject] : $subject;
 
-$email_subject = $subject_prefix . $subject_text . ' from ' . $name;
-
-$email_body  = "New contact form submission from ClarityLabsUSA.com\n";
-$email_body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-$email_body .= "Name:    $name\n";
-$email_body .= "Email:   $email\n";
+// ── Build description with contact details ──
+$description = $message;
 if (!empty($phone)) {
-    $email_body .= "Phone:   $phone\n";
+    $description .= "\n\n---\nPhone: " . $phone;
 }
-$email_body .= "Subject: $subject_text\n\n";
-$email_body .= "Message:\n$message\n\n";
-$email_body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-$email_body .= "Sent from ClarityLabsUSA contact form\n";
-$email_body .= "IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
-$email_body .= "Date: " . date('Y-m-d H:i:s') . "\n";
 
-$headers  = "From: ClarityLabs USA <noreply@claritylabsusa.com>\r\n";
-$headers .= "Reply-To: $name <$email>\r\n";
-$headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+// ── Submit as ticket via Ops API ──
+$api = new ClarityApiClient();
 
-// ── Send ──
-$sent = @mail($to, $email_subject, $email_body, $headers);
+try {
+    $result = $api->createTicket([
+        'name'        => $name,
+        'email'       => $email,
+        'subject'     => $subject_text . ' — ' . $name,
+        'description' => $description,
+        'type'        => 'question',
+        'priority'    => 'normal',
+        'url'         => 'https://claritylabsusa.com/contact',
+    ]);
 
-if ($sent) {
-    $_SESSION['last_contact_submit'] = $now;
-    echo json_encode(['success' => true, 'message' => 'Message sent successfully. We\'ll be in touch within 24 business hours.']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Unable to send message at this time. Please try again later or email us directly.']);
+    if (($result['status'] ?? '') === 'ok') {
+        $_SESSION['last_contact_submit'] = $now;
+        $ticketNum = $result['ticket_number'] ?? '';
+        echo json_encode([
+            'success' => true,
+            'message' => "Message received! We'll be in touch within 24 business hours." . ($ticketNum ? " Your reference number is {$ticketNum}." : ''),
+        ]);
+    } else {
+        // API returned an error — fall through to generic error
+        error_log('Contact form API error: ' . json_encode($result));
+        echo json_encode([
+            'success' => false,
+            'message' => 'Unable to send message at this time. Please try again later or email us directly at ' . CONTACT_EMAIL,
+        ]);
+    }
+} catch (\Throwable $e) {
+    error_log('Contact form exception: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Unable to send message at this time. Please try again later or email us directly at ' . CONTACT_EMAIL,
+    ]);
 }
