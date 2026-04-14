@@ -303,6 +303,20 @@ class ClarityApiClient {
     }
 
     /**
+     * Request password reset via SMS (sends OTP code to phone)
+     */
+    public function forgotPasswordSms(string $phone): array {
+        return $this->post('/auth/forgot-password-sms', ['phone' => $phone]);
+    }
+
+    /**
+     * Verify SMS reset code — returns reset token on success
+     */
+    public function verifyResetCode(string $phone, string $code): array {
+        return $this->post('/auth/verify-reset-code', ['phone' => $phone, 'code' => $code]);
+    }
+
+    /**
      * Reset password with token
      */
     public function resetPassword(array $data): array {

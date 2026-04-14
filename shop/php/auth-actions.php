@@ -168,6 +168,104 @@ switch ($action) {
         break;
 
     /* ──────────────────────────────────────────
+       FORGOT PASSWORD VIA SMS
+       ────────────────────────────────────────── */
+    case 'forgot-password-sms':
+        csrf_verify();
+
+        $phone = trim($_POST['phone'] ?? '');
+        if (empty($phone) || strlen($phone) < 10) {
+            echo json_encode(['success' => false, 'error' => 'Please enter a valid phone number.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->forgotPasswordSms($phone);
+
+        // Always show success to prevent phone enumeration
+        echo json_encode([
+            'success' => true,
+            'message' => 'If an account exists with that phone number, you\'ll receive a reset code shortly.',
+        ]);
+        break;
+
+    /* ──────────────────────────────────────────
+       VERIFY SMS RESET CODE
+       ────────────────────────────────────────── */
+    case 'verify-reset-code':
+        csrf_verify();
+
+        $phone = trim($_POST['phone'] ?? '');
+        $code = trim($_POST['code'] ?? '');
+
+        if (empty($phone) || empty($code)) {
+            echo json_encode(['success' => false, 'error' => 'Phone number and code are required.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->verifyResetCode($phone, $code);
+
+        if (!empty($result['success']) && !empty($result['token'])) {
+            echo json_encode([
+                'success' => true,
+                'token' => $result['token'],
+                'message' => $result['message'] ?? 'Code verified.',
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => $result['message'] ?? 'Invalid or expired code. Please try again.',
+            ]);
+        }
+        break;
+
+    /* ──────────────────────────────────────────
+       RESET PASSWORD (from email link or SMS code)
+       ────────────────────────────────────────── */
+    case 'reset-password':
+        csrf_verify();
+
+        $token = $_POST['token'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['new_password_confirmation'] ?? '';
+
+        if (empty($token)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid reset link.']);
+            exit;
+        }
+
+        if (strlen($newPassword) < 8) {
+            echo json_encode(['success' => false, 'error' => 'Password must be at least 8 characters.']);
+            exit;
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            echo json_encode(['success' => false, 'error' => 'Passwords do not match.']);
+            exit;
+        }
+
+        $api = new ClarityApiClient();
+        $result = $api->resetPassword([
+            'token' => $token,
+            'new_password' => $newPassword,
+            'new_password_confirmation' => $confirmPassword,
+        ]);
+
+        if (!empty($result['success'])) {
+            echo json_encode([
+                'success' => true,
+                'message' => $result['message'] ?? 'Password reset successfully. You can now log in.',
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => $result['message'] ?? 'Failed to reset password. The link may have expired.',
+            ]);
+        }
+        break;
+
+    /* ──────────────────────────────────────────
        CHANGE PASSWORD (first login)
        ────────────────────────────────────────── */
     case 'change-password':
