@@ -2626,15 +2626,18 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   .shop-grid { padding: 32px 16px 48px; }
   .shop-card { width: 100%; }
 
-  /* Mobile: shorter image height, "contain" so the full bottle is visible
-     rather than crop-zoomed into the dark slate background. */
+  /* Mobile: let the square (1:1) product photo bleed full-width.
+     The photo already has its own slate background — no extra
+     navy frame, no padding. cover + square aspect keeps the bottle
+     centered and the framing intact across all products. */
   .shop-card__img {
-    height: 200px;
-    background: #0B1E3F;
-    padding: 12px;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    background: transparent;
+    padding: 0;
   }
   .shop-card__img img {
-    object-fit: contain;
+    object-fit: cover;
     width: 100%;
     height: 100%;
   }
