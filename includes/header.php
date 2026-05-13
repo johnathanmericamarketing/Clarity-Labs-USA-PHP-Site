@@ -77,27 +77,29 @@ if ($isShopSite && defined('CLARITY_API_KEY') && CLARITY_API_KEY !== '') {
         <a href="<?= $shopUrl ?>/" class="header__link <?php echo (isset($current_page) && $current_page === 'shop') ? 'header__link--active' : ''; ?>">Shop <span class="header__chevron">&#9662;</span></a>
         <div class="mega-menu" id="mega-menu">
           <div class="mega-menu__inner">
-            <?php foreach ($menu_groups as $cat => $group): ?>
-            <div class="mega-menu__col">
-              <h4 class="mega-menu__heading"><?php echo htmlspecialchars($cat); ?></h4>
-              <?php foreach ($group as $mp):
-                $mgTags = '';
-                if (!empty($mp['sizes'])) {
-                    $mgs = array_map(function($s) { return $s['mg']; }, $mp['sizes']);
-                    $mgTags = implode(' / ', $mgs);
-                } elseif (!empty($mp['mg_specification'])) {
-                    $mgTags = $mp['mg_specification'];
-                }
-              ?>
-              <a href="<?= $shopUrl ?>/product?sku=<?= urlencode($mp['sku'] ?? '') ?>" class="mega-menu__item">
-                <span class="mega-menu__item-name"><?= htmlspecialchars($mp['name'] ?? '') ?></span>
-                <?php if ($mgTags): ?>
-                <span class="mega-menu__item-mg"><?= htmlspecialchars($mgTags) ?></span>
-                <?php endif; ?>
-              </a>
+            <div class="mega-menu__cols">
+              <?php foreach ($menu_groups as $cat => $group): ?>
+              <div class="mega-menu__col">
+                <h4 class="mega-menu__heading"><?php echo htmlspecialchars($cat); ?></h4>
+                <?php foreach ($group as $mp):
+                  $mgTags = '';
+                  if (!empty($mp['sizes'])) {
+                      $mgs = array_map(function($s) { return $s['mg']; }, $mp['sizes']);
+                      $mgTags = implode(' / ', $mgs);
+                  } elseif (!empty($mp['mg_specification'])) {
+                      $mgTags = $mp['mg_specification'];
+                  }
+                ?>
+                <a href="<?= $shopUrl ?>/product?sku=<?= urlencode($mp['sku'] ?? '') ?>" class="mega-menu__item">
+                  <span class="mega-menu__item-name"><?= htmlspecialchars($mp['name'] ?? '') ?></span>
+                  <?php if ($mgTags): ?>
+                  <span class="mega-menu__item-mg"><?= htmlspecialchars($mgTags) ?></span>
+                  <?php endif; ?>
+                </a>
+                <?php endforeach; ?>
+              </div>
               <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
             <div class="mega-menu__col mega-menu__col--cta">
               <div class="mega-menu__promo">
                 <p class="mega-menu__promo-label">Quality Assurance</p>
