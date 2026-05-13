@@ -1263,24 +1263,27 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   gap: 0;
   align-items: stretch;
 }
-/* Categories area — grid that auto-wraps to multiple rows so each
-   category column gets a readable width regardless of category count. */
+/* Categories area — CSS multi-column layout so categories flow into
+   columns vertically and pack tight, instead of grid rows forcing
+   short categories to leave empty space below the tallest. */
 .mega-menu__cols {
   flex: 1;
   min-width: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 0;
+  column-count: 5;
+  column-gap: 0;
+  padding: 0;
 }
 .mega-menu__col {
-  padding: 24px 20px;
+  break-inside: avoid;       /* keep each category intact, no mid-split */
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  padding: 22px 20px;
   min-width: 0;
-  border-right: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+  display: inline-block;     /* required for column wrap to respect avoid */
+  width: 100%;
 }
-/* Strip the outer-edge borders so we don't double-up against the
-   menu container. The grid handles the inner lines on its own. */
-.mega-menu__cols > .mega-menu__col:last-child { border-right: 1px solid var(--rule); }
+.mega-menu__cols > .mega-menu__col:first-child { border-left: none; }
 .mega-menu__col--cta { border-right: none; }
 .mega-menu__heading {
   font-family: var(--font-mono);
@@ -2540,7 +2543,7 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
     overflow-y: auto;
   }
   .mega-menu__inner { flex-wrap: wrap; }
-  .mega-menu__cols { width: 100%; grid-template-columns: repeat(2, 1fr); }
+  .mega-menu__cols { width: 100%; column-count: 2; }
   .mega-menu__col { flex: none; min-width: 0; }
   .mega-menu__col--cta { width: 100%; max-width: 100%; min-width: 0; }
   .mega-menu__item-name { white-space: normal; }
@@ -2717,8 +2720,8 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
   .brand-values__inner { padding: 48px 20px; }
 
   /* Mega menu mobile */
-  .mega-menu__cols { grid-template-columns: 1fr; }
-  .mega-menu__col { width: 100% !important; border-right: none; border-bottom: 1px solid var(--rule); padding: 16px 20px; }
+  .mega-menu__cols { column-count: 1; }
+  .mega-menu__col { width: 100% !important; border-left: none; border-bottom: 1px solid var(--rule); padding: 16px 20px; }
   .mega-menu__col--cta { display: none; }
   .mega-menu__heading { white-space: normal; }
   .mega-menu__item-name { font-size: 14px; }
