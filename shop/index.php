@@ -72,28 +72,51 @@ if (empty($apiProducts) && !($productsResponse['success'] ?? false)) {
 <!-- Filters -->
 <div class="shop-filters">
   <div class="shop-filters__inner">
-    <button class="filter-pill <?= empty($categoryFilter) ? 'active' : '' ?>" data-category="all" onclick="filterCategory('all')">All</button>
     <?php
-    // Build category list from API or static
+    // Build the unified category list once so the pill row (desktop)
+    // and the select dropdown (mobile) stay in lockstep.
+    $renderCategories = [];
     if (!$apiDown && !empty($apiCategories)) {
-        foreach ($apiCategories as $cat):
+        foreach ($apiCategories as $cat) {
             $catName = $cat['category'] ?? $cat['name'] ?? '';
+            if ($catName === '') continue;
             $catKey = strtolower(str_replace(['&', ' '], ['-', '-'], strip_tags($catName)));
-    ?>
-        <button class="filter-pill <?= $categoryFilter === $catName ? 'active' : '' ?>" data-category="<?= htmlspecialchars($catKey) ?>" onclick="filterCategory('<?= htmlspecialchars($catKey) ?>')"><?= htmlspecialchars($catName) ?></button>
-    <?php endforeach;
+            $renderCategories[$catKey] = $catName;
+        }
     } elseif ($apiDown && !empty($products)) {
-        $categories = [];
         foreach ($products as $p) {
             if (!empty($p['hidden'])) continue;
-            $cat = $p['category'];
+            $cat = $p['category'] ?? '';
+            if ($cat === '') continue;
             $key = strtolower(str_replace(['&', ' '], ['-', '-'], strip_tags($cat)));
-            if (!isset($categories[$key])) $categories[$key] = $cat;
+            if (!isset($renderCategories[$key])) $renderCategories[$key] = $cat;
         }
-        foreach ($categories as $key => $label): ?>
-        <button class="filter-pill" data-category="<?= $key ?>" onclick="filterCategory('<?= $key ?>')"><?= $label ?></button>
-        <?php endforeach;
-    } ?>
+    }
+
+    // Resolve currently-selected category key for both controls.
+    $activeKey = empty($categoryFilter)
+        ? 'all'
+        : strtolower(str_replace(['&', ' '], ['-', '-'], strip_tags($categoryFilter)));
+    ?>
+
+    <!-- Pill row — visible on tablet and desktop, hidden on mobile via CSS -->
+    <div class="filter-pills">
+      <button class="filter-pill <?= $activeKey === 'all' ? 'active' : '' ?>" data-category="all" onclick="filterCategory('all')">All</button>
+      <?php foreach ($renderCategories as $catKey => $catName): ?>
+        <button class="filter-pill <?= $activeKey === $catKey ? 'active' : '' ?>" data-category="<?= htmlspecialchars($catKey) ?>" onclick="filterCategory('<?= htmlspecialchars($catKey) ?>')"><?= htmlspecialchars($catName) ?></button>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- Dropdown — visible on mobile only via CSS. onchange calls the same filterCategory() so pill JS keeps working. -->
+    <label class="filter-select-wrap">
+      <span class="filter-select-label">Category</span>
+      <select class="filter-select" onchange="filterCategory(this.value)" aria-label="Filter by category">
+        <option value="all" <?= $activeKey === 'all' ? 'selected' : '' ?>>All Compounds</option>
+        <?php foreach ($renderCategories as $catKey => $catName): ?>
+          <option value="<?= htmlspecialchars($catKey) ?>" <?= $activeKey === $catKey ? 'selected' : '' ?>><?= htmlspecialchars($catName) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </label>
   </div>
 </div>
 
@@ -219,6 +242,10 @@ function filterCategory(category) {
   document.querySelectorAll('.filter-pill').forEach(pill => {
     pill.classList.toggle('active', pill.dataset.category === category);
   });
+  // Keep the mobile dropdown in sync when a pill is clicked
+  const select = document.querySelector('.filter-select');
+  if (select && select.value !== category) select.value = category;
+
   document.querySelectorAll('.shop-card').forEach(card => {
     if (category === 'all' || card.dataset.category === category) {
       card.classList.remove('hidden');
