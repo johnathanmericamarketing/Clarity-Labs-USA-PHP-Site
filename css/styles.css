@@ -1269,21 +1269,18 @@ h4 { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: va
 .mega-menu__cols {
   flex: 1;
   min-width: 0;
-  column-count: 5;
+  columns: 200px 6;   /* shorthand: at least 200px wide, up to 6 columns */
   column-gap: 0;
+  column-rule: 1px solid var(--rule);
   padding: 0;
 }
 .mega-menu__col {
-  break-inside: avoid;       /* keep each category intact, no mid-split */
+  break-inside: avoid;
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
-  padding: 22px 20px;
-  min-width: 0;
-  border-left: 1px solid var(--rule);
-  display: inline-block;     /* required for column wrap to respect avoid */
-  width: 100%;
+  padding: 20px 18px 8px;
+  margin: 0;
 }
-.mega-menu__cols > .mega-menu__col:first-child { border-left: none; }
 .mega-menu__col--cta { border-right: none; }
 .mega-menu__heading {
   font-family: var(--font-mono);
