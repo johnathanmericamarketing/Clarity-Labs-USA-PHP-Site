@@ -91,6 +91,9 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
             $venmoHandle = VENMO_HANDLE;
             $venmoDisplayName = VENMO_DISPLAY_NAME;
             $venmoDeepLink = VENMO_DEEP_LINK;
+            $cashappCashtag = CASHAPP_CASHTAG;
+            $cashappDisplayName = CASHAPP_DISPLAY_NAME;
+            $cashappDeepLink = CASHAPP_DEEP_LINK;
           ?>
           <div class="payment-box payment-box--awaiting">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
@@ -140,13 +143,6 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
                 <div style="display: flex; gap: 14px;">
                   <div style="flex: 1;">
                     <div class="pay-card__row">
-                      <div class="pay-card__label">Send to</div>
-                      <div class="pay-card__value pay-card__value--mono">
-                        <span id="zelle-email"><?= htmlspecialchars($zelleEmail) ?></span>
-                        <button type="button" onclick="copyText('<?= htmlspecialchars($zelleEmail) ?>', 'zelle-feedback')" class="pay-card__copy">Copy</button>
-                      </div>
-                    </div>
-                    <div class="pay-card__row">
                       <div class="pay-card__label">Amount</div>
                       <div class="pay-card__value"><strong>$<?= number_format((float) ($order['total_amount'] ?? 0), 2) ?></strong></div>
                     </div>
@@ -160,9 +156,8 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
                     <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Scan to pay</div>
                   </div>
                 </div>
-                <div id="zelle-feedback" class="pay-card__feedback">Copied!</div>
                 <div class="pay-card__steps">
-                  <strong>Steps:</strong> Scan the QR, or open your Chase app → <em>Pay & Transfer</em> → <em>Zelle</em> → send to the email above → enter the amount → type the memo.
+                  <strong>Steps:</strong> Open your banking app → <em>Zelle</em> → scan the QR → enter the amount → type the memo.
                 </div>
               </div>
 
@@ -195,6 +190,38 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
                 </a>
                 <div class="pay-card__steps">
                   <strong>Steps:</strong> Tap "Open in Venmo" (mobile) or scan the QR → enter the amount → type the memo in the note field.
+                </div>
+              </div>
+
+              <!-- CASH APP -->
+              <div class="pay-card pay-card--cashapp">
+                <div class="pay-card__eyebrow">Option 3</div>
+                <div class="pay-card__title">Cash App</div>
+                <div style="display: flex; gap: 14px;">
+                  <div style="flex: 1;">
+                    <div class="pay-card__row">
+                      <div class="pay-card__label">Send to</div>
+                      <div class="pay-card__value pay-card__value--mono">$<?= htmlspecialchars($cashappCashtag) ?></div>
+                    </div>
+                    <div class="pay-card__row">
+                      <div class="pay-card__label">Amount</div>
+                      <div class="pay-card__value"><strong>$<?= number_format((float) ($order['total_amount'] ?? 0), 2) ?></strong></div>
+                    </div>
+                    <div class="pay-card__row">
+                      <div class="pay-card__label">Memo</div>
+                      <div class="pay-card__value pay-card__value--mono"><?= htmlspecialchars($order['order_number'] ?? '') ?></div>
+                    </div>
+                  </div>
+                  <div style="width: 100px; text-align: center;">
+                    <img src="/images/cashapp-qr.png" alt="Cash App QR" style="width: 100px; height: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                    <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Scan to pay</div>
+                  </div>
+                </div>
+                <a href="<?= htmlspecialchars($cashappDeepLink) ?>" target="_blank" class="pay-card__deeplink">
+                  Open in Cash App →
+                </a>
+                <div class="pay-card__steps">
+                  <strong>Steps:</strong> Tap "Open in Cash App" (mobile) or scan the QR → enter the amount → add your order number in the note.
                 </div>
               </div>
             </div>
@@ -277,6 +304,7 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
             }
             .pay-card--zelle { border-left-color: #6D28D9; }
             .pay-card--venmo { border-left-color: #3D95CE; }
+            .pay-card--cashapp { border-left-color: #22C55E; }
             .pay-card__eyebrow {
               font-size: 10px;
               text-transform: uppercase;

@@ -71,6 +71,9 @@ define('ZELLE_BUSINESS_NAME', env('ZELLE_BUSINESS_NAME', 'ClarityLabs USA'));
 define('VENMO_HANDLE', env('VENMO_HANDLE', 'claritylabsusa'));     // bare handle, no @
 define('VENMO_DISPLAY_NAME', env('VENMO_DISPLAY_NAME', 'ClarityLabs USA'));
 define('VENMO_DEEP_LINK', 'https://venmo.com/' . VENMO_HANDLE);
+define('CASHAPP_CASHTAG', env('CASHAPP_CASHTAG', 'claritylabs'));   // bare cashtag, no $
+define('CASHAPP_DISPLAY_NAME', env('CASHAPP_DISPLAY_NAME', 'Clarity Labs USA LLC'));
+define('CASHAPP_DEEP_LINK', 'https://cash.app/$' . CASHAPP_CASHTAG);
 
 define('COMPANY_DISCLAIMER', 'Research Use Only. All products sold by ClarityLabsUSA are intended exclusively for in vitro research and laboratory use by qualified professionals. They are not for human or veterinary consumption, are not evaluated by the Food and Drug Administration, and are not intended to diagnose, treat, cure, or prevent any disease or condition. By completing a purchase, the buyer confirms they are 21 years of age or older and a qualified research professional acting within applicable laws and regulations.');
 
