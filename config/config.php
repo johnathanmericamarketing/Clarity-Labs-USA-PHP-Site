@@ -67,6 +67,7 @@ define('COMPANY_WEBSITE', 'https://claritylabsusa.com');
    these constants here (single source of truth).
    ────────────────────────────────────────── */
 define('ZELLE_EMAIL', env('ZELLE_EMAIL', 'orders@claritylabsusa.com'));
+define('ZELLE_IDENTIFIER', env('ZELLE_IDENTIFIER', 'claritynumber1')); // searchable Zelle "Send to" (not the email)
 define('ZELLE_BUSINESS_NAME', env('ZELLE_BUSINESS_NAME', 'ClarityLabs USA'));
 define('VENMO_HANDLE', env('VENMO_HANDLE', 'claritylabsusa'));     // bare handle, no @
 define('VENMO_DISPLAY_NAME', env('VENMO_DISPLAY_NAME', 'ClarityLabs USA'));

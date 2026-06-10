@@ -87,6 +87,7 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
 
             // Phase 10.9 — pulled from config constants (see config/config.php)
             $zelleEmail = ZELLE_EMAIL;
+            $zelleIdentifier = ZELLE_IDENTIFIER;
             $zelleBusinessName = ZELLE_BUSINESS_NAME;
             $venmoHandle = VENMO_HANDLE;
             $venmoDisplayName = VENMO_DISPLAY_NAME;
@@ -143,6 +144,13 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
                 <div style="display: flex; gap: 14px;">
                   <div style="flex: 1;">
                     <div class="pay-card__row">
+                      <div class="pay-card__label">Send to</div>
+                      <div class="pay-card__value pay-card__value--mono">
+                        <span id="zelle-id"><?= htmlspecialchars($zelleIdentifier) ?></span>
+                        <button type="button" onclick="copyText('<?= htmlspecialchars($zelleIdentifier) ?>', 'zelle-feedback')" class="pay-card__copy">Copy</button>
+                      </div>
+                    </div>
+                    <div class="pay-card__row">
                       <div class="pay-card__label">Amount</div>
                       <div class="pay-card__value"><strong>$<?= number_format((float) ($order['total_amount'] ?? 0), 2) ?></strong></div>
                     </div>
@@ -156,8 +164,9 @@ $page_title = 'Order ' . htmlspecialchars($order['order_number'] ?? '', ENT_QUOT
                     <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Scan to pay</div>
                   </div>
                 </div>
+                <div id="zelle-feedback" class="pay-card__feedback">Copied!</div>
                 <div class="pay-card__steps">
-                  <strong>Steps:</strong> Open your banking app → <em>Zelle</em> → scan the QR → enter the amount → type the memo.
+                  <strong>Steps:</strong> Open your banking app → <em>Zelle</em> → scan the QR (or search <strong><?= htmlspecialchars($zelleIdentifier) ?></strong>) → enter the amount → type the memo.
                 </div>
               </div>
 
