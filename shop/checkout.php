@@ -1081,6 +1081,8 @@ if (!$hasWater) {
         // Show branded confirmation page inline
         var orderNum = data.order_number || '';
         var custEmail = <?= json_encode($customer['email'] ?? '') ?>;
+        // Grab the displayed total before we wipe the DOM, for the pay-now QR cards.
+        var orderTotal = (document.getElementById('order-total-btn') || {}).textContent || '';
         document.body.innerHTML = '<div style="margin:0;font-family:Montserrat,Inter,sans-serif;background:#f8fafc;min-height:100vh;">' +
           // Top branded bar
           '<div style="background:#0B1E3F;padding:20px 0;text-align:center;">' +
@@ -1116,21 +1118,42 @@ if (!$hasWater) {
             // Payment instructions - THE MOST IMPORTANT PART
             '<div style="background:#0B1E3F;border-radius:12px;padding:24px;margin:0 0 24px;text-align:left;color:#fff;">' +
               '<div style="font-size:14px;font-weight:700;color:#3EC4B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">&#9888; How to Pay</div>' +
-              '<div style="font-size:14px;color:#e2e8f0;line-height:1.7;margin-bottom:16px;">We just emailed you an invoice with a <strong style="color:#fff;">PDF attached</strong>. Open it and <strong style="color:#fff;">scan a QR code</strong> to pay with <strong style="color:#fff;">one</strong> of these:</div>' +
+              '<div style="font-size:14px;color:#e2e8f0;line-height:1.7;margin-bottom:16px;">Pay now &mdash; <strong style="color:#fff;">scan a QR code below</strong> with your phone using <strong style="color:#fff;">one</strong> of these. (We also emailed you an invoice PDF with the same codes.)</div>' +
               // Zelle
-              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
-                '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128179; Zelle</div>' +
-                '<div style="font-size:13px;color:#cbd5e1;">Scan the Zelle QR on your invoice &mdash; or open your banking app &rarr; Zelle &rarr; enter the name shown on the invoice</div>' +
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+                '<div style="min-width:0;">' +
+                  '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">&#128179; Zelle</div>' +
+                  '<div style="font-size:13px;color:#cbd5e1;">Send to <strong style="color:#fff;"><?= ZELLE_IDENTIFIER ?></strong></div>' +
+                  '<div style="font-size:13px;color:#cbd5e1;">Amount <strong style="color:#fff;">$' + orderTotal + '</strong> &middot; Memo <strong style="color:#fff;">' + orderNum + '</strong></div>' +
+                '</div>' +
+                '<div style="text-align:center;flex-shrink:0;">' +
+                  '<img src="<?= R2_PUBLIC_URL ?>/qr/zelle-qr.png" alt="Zelle QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
+                  '<div style="font-size:10px;color:#94a3b8;margin-top:3px;">Scan to pay</div>' +
+                '</div>' +
               '</div>' +
               // Venmo
-              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
-                '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128241; Venmo</div>' +
-                '<div style="font-size:13px;color:#cbd5e1;">Scan the Venmo QR on your invoice &mdash; or open Venmo &rarr; search our handle &rarr; send</div>' +
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+                '<div style="min-width:0;">' +
+                  '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">&#128241; Venmo</div>' +
+                  '<div style="font-size:13px;color:#cbd5e1;">Send to <strong style="color:#fff;">&#64;<?= VENMO_HANDLE ?></strong></div>' +
+                  '<div style="font-size:13px;color:#cbd5e1;">Amount <strong style="color:#fff;">$' + orderTotal + '</strong> &middot; Note <strong style="color:#fff;">' + orderNum + '</strong></div>' +
+                '</div>' +
+                '<div style="text-align:center;flex-shrink:0;">' +
+                  '<img src="<?= R2_PUBLIC_URL ?>/qr/venmo-qr.png" alt="Venmo QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
+                  '<div style="font-size:10px;color:#94a3b8;margin-top:3px;">Scan to pay</div>' +
+                '</div>' +
               '</div>' +
               // Cash App
-              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
-                '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128181; Cash App</div>' +
-                '<div style="font-size:13px;color:#cbd5e1;">Scan the Cash App QR on your invoice &mdash; or open Cash App &rarr; enter our $cashtag from the invoice</div>' +
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+                '<div style="min-width:0;">' +
+                  '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">&#128181; Cash App</div>' +
+                  '<div style="font-size:13px;color:#cbd5e1;">Send to <strong style="color:#fff;">$<?= CASHAPP_CASHTAG ?></strong></div>' +
+                  '<div style="font-size:13px;color:#cbd5e1;">Amount <strong style="color:#fff;">$' + orderTotal + '</strong> &middot; Memo <strong style="color:#fff;">' + orderNum + '</strong></div>' +
+                '</div>' +
+                '<div style="text-align:center;flex-shrink:0;">' +
+                  '<img src="<?= R2_PUBLIC_URL ?>/qr/cashapp-qr.png" alt="Cash App QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
+                  '<div style="font-size:10px;color:#94a3b8;margin-top:3px;">Scan to pay</div>' +
+                '</div>' +
               '</div>' +
               // Memo warning
               '<div style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px 16px;text-align:center;">' +
