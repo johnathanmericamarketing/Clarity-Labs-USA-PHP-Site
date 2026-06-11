@@ -1127,7 +1127,7 @@ if (!$hasWater) {
                   '<div style="font-size:13px;color:#cbd5e1;">Amount <strong style="color:#fff;">$' + orderTotal + '</strong> &middot; Memo <strong style="color:#fff;">' + orderNum + '</strong></div>' +
                 '</div>' +
                 '<div style="text-align:center;flex-shrink:0;">' +
-                  '<img src="<?= R2_PUBLIC_URL ?>/qr/zelle-qr.png" alt="Zelle QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
+                  '<img src="<?= R2_PUBLIC_URL ?>/qr-codes/zelle-qr.png" alt="Zelle QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
                   '<div style="font-size:10px;color:#94a3b8;margin-top:3px;">Scan to pay</div>' +
                 '</div>' +
               '</div>' +
@@ -1139,7 +1139,7 @@ if (!$hasWater) {
                   '<div style="font-size:13px;color:#cbd5e1;">Amount <strong style="color:#fff;">$' + orderTotal + '</strong> &middot; Note <strong style="color:#fff;">' + orderNum + '</strong></div>' +
                 '</div>' +
                 '<div style="text-align:center;flex-shrink:0;">' +
-                  '<img src="<?= R2_PUBLIC_URL ?>/qr/venmo-qr.png" alt="Venmo QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
+                  '<img src="<?= R2_PUBLIC_URL ?>/qr-codes/venmo-qr.png" alt="Venmo QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
                   '<div style="font-size:10px;color:#94a3b8;margin-top:3px;">Scan to pay</div>' +
                 '</div>' +
               '</div>' +
@@ -1151,7 +1151,7 @@ if (!$hasWater) {
                   '<div style="font-size:13px;color:#cbd5e1;">Amount <strong style="color:#fff;">$' + orderTotal + '</strong> &middot; Memo <strong style="color:#fff;">' + orderNum + '</strong></div>' +
                 '</div>' +
                 '<div style="text-align:center;flex-shrink:0;">' +
-                  '<img src="<?= R2_PUBLIC_URL ?>/qr/cashapp-qr.png" alt="Cash App QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
+                  '<img src="<?= R2_PUBLIC_URL ?>/qr-codes/cashapp-qr.png" alt="Cash App QR" style="width:110px;height:auto;border-radius:8px;background:#fff;padding:4px;display:block;">' +
                   '<div style="font-size:10px;color:#94a3b8;margin-top:3px;">Scan to pay</div>' +
                 '</div>' +
               '</div>' +
