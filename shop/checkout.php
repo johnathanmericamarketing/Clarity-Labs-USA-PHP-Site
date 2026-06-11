@@ -740,6 +740,10 @@ if (!$hasWater) {
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
   let selectedShippingRate = null;
   let shippingAmount = 0;
+  // Capture the selected shipping service so ops/fulfillment prints the right label.
+  let selectedShippingCarrier = null;
+  let selectedShippingService = null;
+  let selectedShippingEstDays = null;
   const subtotal = <?= $subtotal ?>;
 
   // GA4 begin_checkout event
@@ -801,12 +805,15 @@ if (!$hasWater) {
     }
   }
 
-  function selectRate(el, price, rateId) {
+  function selectRate(el, price, rateId, carrier, service, estDays) {
     document.querySelectorAll('.shipping-rate').forEach(r => r.classList.remove('selected'));
     el.classList.add('selected');
     el.querySelector('input[type="radio"]').checked = true;
     selectedShippingRate = rateId;
     shippingAmount = parseFloat(price);
+    selectedShippingCarrier = carrier || null;
+    selectedShippingService = service || null;
+    selectedShippingEstDays = (estDays !== undefined && estDays !== null && estDays !== '') ? String(estDays) : null;
     // GA4 add_shipping_info event
     if (typeof ClarityAnalytics !== 'undefined') {
       ClarityAnalytics.addShippingInfo(shippingAmount, el.querySelector('.shipping-rate__carrier')?.textContent || '');
@@ -844,7 +851,7 @@ if (!$hasWater) {
           const isDefault = idx === 0;
           const div = document.createElement('div');
           div.className = 'shipping-rate' + (isDefault ? ' selected' : '');
-          div.onclick = function() { selectRate(this, tier.customer_price, tier.rate_id); };
+          div.onclick = function() { selectRate(this, tier.customer_price, tier.rate_id, tier.carrier, tier.service, tier.est_delivery_days); };
           div.innerHTML = `
             <div class="shipping-rate__info">
               <input type="radio" name="shipping_tier" value="${tier.rate_id}" ${isDefault ? 'checked' : ''}>
@@ -860,6 +867,9 @@ if (!$hasWater) {
           if (isDefault) {
             selectedShippingRate = tier.rate_id;
             shippingAmount = tier.customer_price;
+            selectedShippingCarrier = tier.carrier || null;
+            selectedShippingService = tier.service || null;
+            selectedShippingEstDays = (tier.est_delivery_days !== undefined && tier.est_delivery_days !== null && tier.est_delivery_days !== '') ? String(tier.est_delivery_days) : null;
           }
         });
 
@@ -874,6 +884,7 @@ if (!$hasWater) {
         // No rates returned — default to free shipping and continue
         shippingAmount = 0;
         selectedShippingRate = 'free_standard';
+        selectedShippingCarrier = null; selectedShippingService = null; selectedShippingEstDays = null;
         updateTotal();
         goToStep(2);
       }
@@ -881,6 +892,7 @@ if (!$hasWater) {
       // If rate fetch fails, continue with free shipping
       shippingAmount = 0;
       selectedShippingRate = 'free_standard';
+      selectedShippingCarrier = null; selectedShippingService = null; selectedShippingEstDays = null;
       updateTotal();
       goToStep(2);
     }
@@ -1039,6 +1051,9 @@ if (!$hasWater) {
         payment_method: 'pending',
         payment_reference: 'awaiting_invoice',
         shipping_rate_id: selectedShippingRate,
+        shipping_carrier: selectedShippingCarrier,
+        shipping_service: selectedShippingService,
+        shipping_est_days: selectedShippingEstDays,
         save_shipping_as_default: form.querySelector('[name="save_shipping_as_default"]')?.checked ? 1 : 0,
       };
 
