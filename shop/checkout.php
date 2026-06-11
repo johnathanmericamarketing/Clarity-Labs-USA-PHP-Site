@@ -466,12 +466,13 @@ if (!$hasWater) {
               <!-- Payment Info -->
               <div class="payment-info-box">
                 <h4>💳 How Payment Works</h4>
-                <p>After placing your order, you'll receive an <strong>invoice by email</strong> with payment instructions. We accept:</p>
+                <p>After you place your order, we'll email you an <strong>invoice (PDF attached)</strong> with everything you need to pay. We accept:</p>
                 <p>
-                  <strong>Zelle</strong> · <strong>Venmo</strong> · <strong>ACH Bank Transfer</strong> · <strong>Check</strong>
+                  <strong>Zelle</strong> · <strong>Venmo</strong> · <strong>Cash App</strong>
                 </p>
+                <p>Each option has a <strong>QR code right on the invoice PDF</strong> — just scan it with your phone to pay. Prefer to type it in? The send-to handle is on the invoice too.</p>
                 <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 0;">
-                  Your order will be processed and shipped once payment is confirmed. Payment details are included in the invoice.
+                  Your order is processed and shipped as soon as payment is confirmed.
                 </p>
               </div>
 
@@ -1115,16 +1116,21 @@ if (!$hasWater) {
             // Payment instructions - THE MOST IMPORTANT PART
             '<div style="background:#0B1E3F;border-radius:12px;padding:24px;margin:0 0 24px;text-align:left;color:#fff;">' +
               '<div style="font-size:14px;font-weight:700;color:#3EC4B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">&#9888; How to Pay</div>' +
-              '<div style="font-size:14px;color:#e2e8f0;line-height:1.7;margin-bottom:16px;">We just sent you an invoice by email. Open it and send payment using <strong style="color:#fff;">one</strong> of these methods:</div>' +
+              '<div style="font-size:14px;color:#e2e8f0;line-height:1.7;margin-bottom:16px;">We just emailed you an invoice with a <strong style="color:#fff;">PDF attached</strong>. Open it and <strong style="color:#fff;">scan a QR code</strong> to pay with <strong style="color:#fff;">one</strong> of these:</div>' +
               // Zelle
               '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
                 '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128179; Zelle</div>' +
-                '<div style="font-size:13px;color:#cbd5e1;">Open your banking app &rarr; Send with Zelle &rarr; Enter the email from your invoice</div>' +
+                '<div style="font-size:13px;color:#cbd5e1;">Scan the Zelle QR on your invoice &mdash; or open your banking app &rarr; Zelle &rarr; enter the name shown on the invoice</div>' +
               '</div>' +
               // Venmo
-              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
                 '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128241; Venmo</div>' +
-                '<div style="font-size:13px;color:#cbd5e1;">Open Venmo &rarr; Search for our handle from your invoice &rarr; Send payment</div>' +
+                '<div style="font-size:13px;color:#cbd5e1;">Scan the Venmo QR on your invoice &mdash; or open Venmo &rarr; search our handle &rarr; send</div>' +
+              '</div>' +
+              // Cash App
+              '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:10px;padding:14px 16px;margin-bottom:14px;">' +
+                '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">&#128181; Cash App</div>' +
+                '<div style="font-size:13px;color:#cbd5e1;">Scan the Cash App QR on your invoice &mdash; or open Cash App &rarr; enter our $cashtag from the invoice</div>' +
               '</div>' +
               // Memo warning
               '<div style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px 16px;text-align:center;">' +
@@ -1142,7 +1148,7 @@ if (!$hasWater) {
               '</div>' +
               '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">' +
                 '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div>' +
-                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;"><strong style="color:#0B1E3F;">Send payment</strong> via Zelle or Venmo within 48 hours</div>' +
+                '<div style="padding-top:4px;font-size:13px;color:#6B7185;line-height:1.5;"><strong style="color:#0B1E3F;">Send payment</strong> via Zelle, Venmo, or Cash App within 48 hours</div>' +
               '</div>' +
               '<div style="display:flex;align-items:flex-start;gap:12px;">' +
                 '<div style="width:28px;height:28px;border-radius:50%;background:#0B1E3F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>' +
