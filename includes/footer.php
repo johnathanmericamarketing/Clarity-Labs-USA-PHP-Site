@@ -103,3 +103,10 @@ if (!empty($_footerRawProducts) && function_exists('group_products_by_compound')
   </div>
 </footer>
 <script src="<?php echo $bp; ?>js/main.js"></script>
+<?php
+// Pep chat widget (floating bubble; chat runs in a cross-origin iframe).
+// Excluded from checkout so nothing overlays the place-order flow —
+// remove the basename() condition to show it there too.
+if (basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'checkout.php'): ?>
+<script src="https://pep.stream-pc.com/embed.js" defer></script>
+<?php endif; ?>
