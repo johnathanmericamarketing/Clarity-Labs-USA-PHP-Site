@@ -928,7 +928,7 @@ if (!$hasWater) {
       formData.append('coupon_code', code);
       formData.append('_csrf_token', document.querySelector('meta[name="csrf-token"]').content);
 
-      var response = await fetch('/shop/php/checkout-actions.php?action=validate-coupon', {
+      var response = await fetch('php/checkout-actions.php?action=validate-coupon', {
         method: 'POST',
         body: formData
       });
@@ -989,7 +989,7 @@ if (!$hasWater) {
     // Tell server to clear session coupon
     var formData = new FormData();
     formData.append('_csrf_token', document.querySelector('meta[name="csrf-token"]').content);
-    fetch('/shop/php/checkout-actions.php?action=remove-coupon', { method: 'POST', body: formData });
+    fetch('php/checkout-actions.php?action=remove-coupon', { method: 'POST', body: formData });
   }
 
   function updateTotalWithDiscount() {
