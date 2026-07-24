@@ -101,6 +101,7 @@ switch ($action) {
         $customer = get_customer();
         $customerId = $customer['id'] ?? null;
 
+        $api = new ClarityApiClient();
         $result = $api->validateCoupon($code, $subtotal, $items, $customerId);
 
         if (($result['valid'] ?? false)) {
