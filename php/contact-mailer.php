@@ -13,11 +13,12 @@ require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/api-client.php';
 
-// Start the session BEFORE any CSRF work. csrf_verify() calls csrf_token(),
-// which throws "Session must be started" if the session isn't active — a
-// browser POST (sends a token) then fatals with a 500, while a tokenless
-// request short-circuits past it. Mirrors checkout-actions.php.
-clarity_session_start();
+// Start the session BEFORE any CSRF work — csrf_verify() calls csrf_token(),
+// which throws "Session must be started" if the session isn't active. Use the
+// DEFAULT session (plain session_start) to MATCH contact.php: clarity_session_start()
+// uses a different cookie (clarity_session) than the page's default PHPSESSID,
+// so the token the page stored wouldn't be visible here → 403.
+if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
 
 header('Content-Type: application/json');
 
