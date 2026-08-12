@@ -13,6 +13,12 @@ require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/api-client.php';
 
+// Start the session BEFORE any CSRF work. csrf_verify() calls csrf_token(),
+// which throws "Session must be started" if the session isn't active — a
+// browser POST (sends a token) then fatals with a 500, while a tokenless
+// request short-circuits past it. Mirrors checkout-actions.php.
+clarity_session_start();
+
 header('Content-Type: application/json');
 
 // ── Only accept POST ──
