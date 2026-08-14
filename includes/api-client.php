@@ -324,6 +324,13 @@ class ClarityApiClient {
     }
 
     /**
+     * Confirm a pending email change (token from the link emailed to the new address)
+     */
+    public function verifyEmailChange(string $token): array {
+        return $this->post('/auth/verify-email-change', ['token' => $token]);
+    }
+
+    /**
      * Change password (forced on first login)
      */
     public function changePassword(array $data, string $bearerToken): array {

@@ -341,7 +341,12 @@ switch ($action) {
             if (!empty($me['data'])) {
                 set_customer($me['data'], get_customer_token());
             }
-            echo json_encode(['success' => true, 'message' => 'Profile updated successfully.']);
+            // Email changes are pending until confirmed from the new inbox —
+            // surface the API's message so the customer knows to check it
+            echo json_encode([
+                'success' => true,
+                'message' => $result['message'] ?? 'Profile updated successfully.',
+            ]);
         } else {
             echo json_encode([
                 'success' => false,
