@@ -191,9 +191,16 @@ $customer = get_customer();
       const data = await res.json();
 
       if (data.success) {
-        msgEl.innerHTML = '<div class="change-pw-message change-pw-message--success">Password updated! Redirecting to the shop...</div>';
+        msgEl.innerHTML = '<div class="change-pw-message change-pw-message--success">Password updated! Please sign in with your new password.</div>';
+        // The password change revokes every session token (security), so end
+        // the local session cleanly and send them to sign-in
+        try {
+          const lo = new FormData();
+          lo.set('csrf_token', formData.get('csrf_token') || csrfToken || '');
+          await fetch('<?= SHOP_URL ?>/php/auth-actions.php?action=logout', { method: 'POST', body: lo });
+        } catch (err) { /* session token is already dead — redirect regardless */ }
         setTimeout(() => {
-          window.location.href = '<?= SHOP_URL ?>/';
+          window.location.href = '<?= SHOP_URL ?>/gate/sign-in';
         }, 2000);
       } else {
         const errDiv = document.createElement('div');

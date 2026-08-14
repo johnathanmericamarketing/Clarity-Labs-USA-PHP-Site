@@ -300,6 +300,7 @@ switch ($action) {
             'current_password' => $currentPassword,
             'new_password' => $newPassword,
             'new_password_confirmation' => $confirmPassword,
+            'client_ip' => $_SERVER['REMOTE_ADDR'] ?? '',
         ], get_customer_token());
 
         if (!empty($result['success'])) {
