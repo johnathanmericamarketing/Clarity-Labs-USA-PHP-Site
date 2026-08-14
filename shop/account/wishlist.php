@@ -91,7 +91,7 @@ $wishlistItems = $wishlistResponse['data'] ?? [];
             <a href="<?= SHOP_URL ?>/account/addresses">Addresses</a>
             <a href="<?= SHOP_URL ?>/account/wishlist" class="active">Saved Products</a>
             <a href="<?= SHOP_URL ?>/account/settings">Settings</a>
-            <a href="<?= SHOP_URL ?>/support/">Support</a>
+            <a href="<?= SHOP_URL ?>/account/support">Support</a>
             <div class="account-nav__logout">
               <a href="#" onclick="logout(); return false;">Sign Out</a>
             </div>

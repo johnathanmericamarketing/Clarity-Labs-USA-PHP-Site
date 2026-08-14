@@ -405,6 +405,13 @@ class ClarityApiClient {
         return $this->post('/support/ticket', $data);
     }
 
+    /**
+     * Get the authenticated customer's support tickets
+     */
+    public function getMyTickets(string $bearerToken): array {
+        return $this->get('/support/tickets', [], $bearerToken);
+    }
+
     /* ──────────────────────────────────────────
        Coupon Endpoints (to be added in ops)
        ────────────────────────────────────────── */
