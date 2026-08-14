@@ -300,7 +300,11 @@ switch ($action) {
             'current_password' => $currentPassword,
             'new_password' => $newPassword,
             'new_password_confirmation' => $confirmPassword,
-            'client_ip' => $_SERVER['REMOTE_ADDR'] ?? '',
+            // Behind Cloudflare REMOTE_ADDR is the CF edge — the visitor's
+            // real IP arrives in CF-Connecting-IP (display-only downstream)
+            'client_ip' => $_SERVER['HTTP_CF_CONNECTING_IP']
+                ?? (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]) : null)
+                ?? $_SERVER['REMOTE_ADDR'] ?? '',
         ], get_customer_token());
 
         if (!empty($result['success'])) {
