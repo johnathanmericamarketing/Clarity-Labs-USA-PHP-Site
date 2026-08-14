@@ -345,6 +345,7 @@ switch ($action) {
             // surface the API's message so the customer knows to check it
             echo json_encode([
                 'success' => true,
+                'email_change_pending' => !empty($result['email_change_pending']),
                 'message' => $result['message'] ?? 'Profile updated successfully.',
             ]);
         } else {

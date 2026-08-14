@@ -222,7 +222,9 @@ $smsCanReceive = !empty($customer['sms_can_receive']);
         const data = await res.json();
         if (data.success) {
           alertBox.innerHTML = '<div class="alert alert-success">' + (data.message || 'Saved.') + '</div>';
-          setTimeout(() => location.reload(), 1200);
+          // Email changes need the customer to read the "check your new inbox"
+          // message — don't wipe it with a quick reload
+          setTimeout(() => location.reload(), data.email_change_pending ? 8000 : 1200);
         } else {
           let msg = data.error || 'Update failed.';
           if (data.errors) {
