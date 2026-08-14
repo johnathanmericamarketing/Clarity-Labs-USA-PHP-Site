@@ -2,7 +2,10 @@
 /* ============================================================
    Email Change Confirmation Landing Page
    Clicked from the "Confirm your new email" message sent to the
-   NEW address. Applies the pending email change via the ops API.
+   NEW address. GET renders a Confirm button; only the explicit
+   POST applies the change — mail scanners (Outlook SafeLinks
+   etc.) prefetch GET links, and a prefetch must never confirm
+   an email change on its own.
    ============================================================ */
 
 require_once __DIR__ . '/../../config/config.php';
@@ -16,31 +19,42 @@ if (!is_age_verified()) {
     set_age_verified();
 }
 
-$token = $_GET['token'] ?? '';
+$state = 'confirm'; // confirm | success | error
 $message = '';
-$success = false;
 
-if (!empty($token)) {
-    $api = new ClarityApiClient();
-    $result = $api->verifyEmailChange($token);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['token'] ?? '';
 
-    if (!empty($result['status']) && $result['status'] === 'ok') {
-        $success = true;
-        $message = $result['message'] ?? 'Email address confirmed!';
-
-        // If they're signed in on this browser, refresh the cached customer
-        // so the account pages show the new email immediately
-        if (is_logged_in()) {
-            $me = $api->getMe(get_customer_token());
-            if (!empty($me['data'])) {
-                set_customer($me['data'], get_customer_token());
-            }
-        }
+    if (empty($token)) {
+        $state = 'error';
+        $message = 'No confirmation token provided.';
     } else {
-        $message = $result['message'] ?? 'Confirmation failed or the link expired.';
+        $api = new ClarityApiClient();
+        $result = $api->verifyEmailChange($token);
+
+        if (!empty($result['status']) && $result['status'] === 'ok') {
+            $state = 'success';
+            $message = $result['message'] ?? 'Email address confirmed!';
+
+            // If they're signed in on this browser, refresh the cached customer
+            // so the account pages show the new email immediately
+            if (is_logged_in()) {
+                $me = $api->getMe(get_customer_token());
+                if (!empty($me['data'])) {
+                    set_customer($me['data'], get_customer_token());
+                }
+            }
+        } else {
+            $state = 'error';
+            $message = $result['message'] ?? 'Confirmation failed or the link expired.';
+        }
     }
 } else {
-    $message = 'No confirmation token provided.';
+    $token = $_GET['token'] ?? '';
+    if (empty($token)) {
+        $state = 'error';
+        $message = 'No confirmation token provided.';
+    }
 }
 
 $base_path = '../../';
@@ -94,6 +108,9 @@ $page_title = 'Confirm Email Change';
       color: var(--white);
       background: linear-gradient(135deg, var(--green), var(--navy));
       text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
       transition: transform 0.2s;
     }
     .verify-card .btn:hover { transform: translateY(-2px); }
@@ -104,7 +121,15 @@ $page_title = 'Confirm Email Change';
 <body>
   <div class="verify-page">
     <div class="verify-card">
-      <?php if ($success): ?>
+      <?php if ($state === 'confirm'): ?>
+        <div class="verify-icon">&#9993;</div>
+        <h1>Confirm Email Change</h1>
+        <p>Click the button below to confirm this as the new email address for your ClarityLabs account. Your sign-in and all account emails will switch to it.</p>
+        <form method="post">
+          <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+          <button type="submit" class="btn">Confirm New Email</button>
+        </form>
+      <?php elseif ($state === 'success'): ?>
         <div class="verify-icon">&#10003;</div>
         <h1 class="verify-success">Email Updated!</h1>
         <p><?= htmlspecialchars($message) ?></p>
