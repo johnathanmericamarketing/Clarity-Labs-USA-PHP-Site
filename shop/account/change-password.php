@@ -135,6 +135,11 @@ $customer = get_customer();
         <?= csrf_field() ?>
 
         <div class="form-group">
+          <label for="current-password">Current Password</label>
+          <input type="password" id="current-password" name="current_password" placeholder="Your current (or temporary) password" required autocomplete="current-password">
+        </div>
+
+        <div class="form-group">
           <label for="new-password">New Password</label>
           <input type="password" id="new-password" name="new_password" placeholder="At least 8 characters" required minlength="8">
         </div>

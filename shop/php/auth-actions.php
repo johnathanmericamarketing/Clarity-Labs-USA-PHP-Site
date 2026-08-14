@@ -276,8 +276,14 @@ switch ($action) {
             exit;
         }
 
+        $currentPassword = $_POST['current_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
         $confirmPassword = $_POST['new_password_confirmation'] ?? '';
+
+        if ($currentPassword === '') {
+            echo json_encode(['success' => false, 'error' => 'Current password is required.']);
+            exit;
+        }
 
         if (strlen($newPassword) < 8) {
             echo json_encode(['success' => false, 'error' => 'Password must be at least 8 characters.']);
@@ -291,6 +297,7 @@ switch ($action) {
 
         $api = new ClarityApiClient();
         $result = $api->changePassword([
+            'current_password' => $currentPassword,
             'new_password' => $newPassword,
             'new_password_confirmation' => $confirmPassword,
         ], get_customer_token());

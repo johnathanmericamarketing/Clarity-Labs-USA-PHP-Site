@@ -146,7 +146,14 @@ $smsCanReceive = !empty($customer['sms_can_receive']);
       </div>
 
       <div class="form-row">
-        <label for="email">Email Address</label>
+        <label for="email">
+          Email Address
+          <?php if (!empty($customer['email_verified_at'])): ?>
+            <span style="display: inline-block; margin-left: 8px; padding: 2px 10px; background: #D1FAE5; color: #065F46; border-radius: 10px; font-size: 11px; font-weight: 600; vertical-align: middle;">&#10003; Verified</span>
+          <?php else: ?>
+            <span style="display: inline-block; margin-left: 8px; padding: 2px 10px; background: #FEF3C7; color: #92400E; border-radius: 10px; font-size: 11px; font-weight: 600; vertical-align: middle;">Unverified</span>
+          <?php endif; ?>
+        </label>
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($customer['email'] ?? '') ?>" required>
       </div>
 
