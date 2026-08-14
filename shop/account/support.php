@@ -214,12 +214,12 @@ $loadFailed = (($ticketsResponse['status'] ?? '') !== 'ok');
                         </td>
                         <td>
                           <span class="ticket-status ticket-status--<?= htmlspecialchars(strtolower($ticket['status'] ?? 'open')) ?>">
-                            <?= ucwords(str_replace('_', ' ', $ticket['status'] ?? 'open')) ?>
+                            <?= htmlspecialchars(ucwords(str_replace('_', ' ', $ticket['status'] ?? 'open'))) ?>
                           </span>
                         </td>
                         <td class="hide-mobile"><?= (int) ($ticket['replies_count'] ?? 0) ?></td>
                         <td>
-                          <?php if (!empty($ticket['public_url'])): ?>
+                          <?php if (!empty($ticket['public_url']) && str_starts_with($ticket['public_url'], 'https://')): ?>
                             <a href="<?= htmlspecialchars($ticket['public_url']) ?>" target="_blank" rel="noopener" class="ticket-view-link">View &amp; Reply →</a>
                           <?php endif; ?>
                         </td>
